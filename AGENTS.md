@@ -216,6 +216,12 @@ npm run build
 
 ## 交接日志
 
+### 2026-06-24 - 调整云登录验证码文案
+
+- 改动：`cloud-sync.js` 中云存档登录验证码输入框占位文案由“输入邮件里的 6 位验证码”改为“输入邮件里的验证码”，避免 Supabase 邮件实际发出 8 位或其他长度 OTP 时误导用户。
+- 验证：已运行 `node --check E:\HOKW_Farm\cloud-sync.js` 和 `npm run build`。
+- 后续注意：Supabase OTP 长度由 Supabase/邮件模板配置决定，前端不应固定写死为 6 位；当前验证逻辑会把用户输入的完整验证码传给 Supabase。
+
 ### 2026-06-24 - 接入 Supabase 云存档第一版
 
 - 改动：新增 `storage-keys.js` 统一维护可迁移/可同步的 9 组本地数据键；新增 `cloud-config.js` 本地空配置和 `cloud-sync.js` 云同步层，支持 Supabase 邮箱验证码登录、登录后云端快照优先恢复、云端为空时用本地数据初始化、可迁移数据变更后自动防抖上传；新增 `supabase/user_snapshots.sql`，包含 `user_snapshots` 表、RLS 策略和更新时间/版本触发器；所有页面接入云同步脚本，主页“在线迁移与本地备份”改为“云存档与本地备份”；`scripts/build-site.js` 构建时按 `HOKW_SUPABASE_URL` 和 `HOKW_SUPABASE_PUBLISHABLE_KEY` 生成 `dist/cloud-config.js`；`README.md`、`TODO.md`、`AGENTS.md` 已同步。

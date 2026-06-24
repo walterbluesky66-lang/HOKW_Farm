@@ -123,7 +123,7 @@
             <button class="btn blue" data-cloud-send type="submit">发送验证码</button>
             <label class="field cloud-sync-field">
               <span>验证码</span>
-              <input class="input" data-cloud-token type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="输入邮件里的 6 位验证码" />
+              <input class="input" data-cloud-token type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="输入邮件里的验证码" />
             </label>
             <button class="btn primary" data-cloud-verify type="button">登录并同步</button>
           </form>
