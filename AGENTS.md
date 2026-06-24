@@ -47,6 +47,7 @@
 - 主页面优先显示用户当下要操作的信息；规则说明放在 `rules.html`。
 - 保持本地静态网页可直接打开，不要引入必须构建才能运行的依赖，除非用户明确要求升级架构。
 - 发布到公网时使用 `dist/`，不要直接发布项目根目录；根目录包含交接文档、README、TODO、Excel 源文件和原始参考 HTML。
+- 线上站点为 `https://hokw-helper.pages.dev/`，通过 Cloudflare Pages 连接 GitHub 仓库 `walterbluesky66-lang/HOKW_Farm` 的 `main` 分支自动部署。只要用户要求修改、优化或编辑网站内容，且没有明确说“只本地修改/不要发布”，完成实质修改后默认应运行验证、更新交接日志、提交 Git commit 并 `git push origin main`，让 Cloudflare 自动更新线上站点。
 - 不要把药物作物混入主菜地收益计算。
 - 兴趣圈页面应保持可拆分：主页只保留入口，核心逻辑不写入 `app.js`，本地状态不要和农场、牧场、规划状态混用。
 - 保持中文用户文案自然、简洁；页面标题目前为 `Farm Helper`。
@@ -182,6 +183,7 @@ npm run build
 
 - 修改了项目状态、功能、文件结构、验证方式时，更新上方对应章节。
 - 在下方“交接日志”新增一条最新记录，放在最上面。
+- 如果改动会影响线上网站，验证通过后默认提交并推送到 GitHub `main`，除非用户明确要求暂不发布；最终回复需要说明是否已经 push，以及 Cloudflare 是否会自动部署。
 
 交接日志格式：
 
@@ -201,6 +203,12 @@ npm run build
 - 其他 Codex 对话也可以直接更新本文件，但不要删除旧日志，除非用户明确要求整理。
 
 ## 交接日志
+
+### 2026-06-24 - 固化 GitHub 自动发布规则
+
+- 改动：在开发原则和对话结束更新规则中明确线上站点 `https://hokw-helper.pages.dev/` 由 Cloudflare Pages 连接 GitHub 仓库 `walterbluesky66-lang/HOKW_Farm` 的 `main` 分支自动部署；后续只要用户要求修改、优化或编辑网站内容，且未明确说“只本地修改/不要发布”，完成实质修改后默认应验证、更新交接日志、提交 Git commit 并 `git push origin main`。
+- 验证：已运行 `node --check E:\HOKW_Farm\app.js`、`node --check E:\HOKW_Farm\interest-circle.js`、`node --check E:\HOKW_Farm\scripts\build-site.js` 和 `npm run build`；已确认本地仓库跟踪 `origin/main`。
+- 后续注意：Cloudflare Pages 的具体部署完成状态仍应以 Cloudflare 后台为准；后续 Codex 只要成功 push 到 GitHub，线上站点通常会自动触发构建，但最终回复仍应说明是否已推送。
 
 ### 2026-06-24 - 初始化 GitHub 源码仓库准备
 
