@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body data-page="main">
+  <div class="app">
+    <header class="hero">
+      <div>
+        <div class="pill">🌱 Farm Helper</div>
+        <h1>Farm Helper</h1>
+        <p class="lead">玩家在游戏里种下作物或养殖动物后，在网页里打卡。本工具会根据作物浇水、动物催产收获时间和当前栏位状态，自动计算下一次该做什么。</p>
+      </div>
+      <div class="actions">
+        <a class="btn primary hero-planner-link" href="planner.html">🧭 一键规划</a>
+        <a class="btn primary hero-interest-link" href="interest-circle.html">兴趣圈</a>
+        <a class="btn ghost" href="ranch.html">🐮 牧场管理</a>
+        <a class="btn ghost" href="rules.html">📘 种菜规则</a>
+        <a class="btn ghost" href="crop-archive.html">🗂️ 档案库</a>
+        <button class="btn" id="notifyBtn">🔔 开启浏览器提醒</button>
+        <button class="btn ghost" id="testNotifyBtn">🧪 测试提醒</button>
+        <button class="btn primary" id="clearBtn">↺ 清空记录</button>
+      </div>
+    </header>
+
+    <section class="grid-stats">
+      <div class="stat">
+        <div class="stat-top"><div><div class="stat-title">当前状态</div><div class="stat-value" id="statStatus">未种植</div></div><div class="stat-icon">🌾</div></div>
+        <div class="stat-sub" id="statStatusSub">在左侧选择作物后开始管理</div>
+      </div>
+      <div class="stat">
+        <div class="stat-top"><div><div class="stat-title">剩余成熟</div><div class="stat-value" id="statHarvest">—</div></div><div class="stat-icon">⏰</div></div>
+        <div class="stat-sub" id="statHarvestSub">暂无成熟时间</div>
+      </div>
+      <div class="stat">
+        <div class="stat-top"><div><div class="stat-title">下次自浇</div><div class="stat-value" id="statWater">—</div></div><div class="stat-icon">💧</div></div>
+        <div class="stat-sub" id="statWaterSub">暂无待浇水作物</div>
+      </div>
+      <div class="stat">
+        <div class="stat-top"><div><div class="stat-title">好友浇水</div><div class="stat-value" id="statFriend">0/4</div></div><div class="stat-icon">🤝</div></div>
+        <div class="stat-sub">成熟前最多计入 4 次</div>
+      </div>
+    </section>
+
+    <main class="main">
+      <aside>
+        <section class="panel farm-settings-panel">
+          <div class="panel-head">
+            <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">⚙️</div>
+            <div><h2>农场设置</h2><p>等级和田数会影响作物档案匹配、一键规划和周末目标进度。</p></div>
+          </div>
+
+          <div class="form-grid farm-settings-grid">
+            <div class="field">
+              <label for="plannerLevel">当前农场等级</label>
+              <div class="stepper-field">
+                <button class="mini-btn neutral" id="plannerLevelDown" type="button" aria-label="降低农场等级">−</button>
+                <input id="plannerLevel" class="input" type="number" min="1" step="1" inputmode="numeric" value="1" />
+                <button class="mini-btn neutral" id="plannerLevelUp" type="button" aria-label="提高农场等级">+</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="plannerLandCount">当前农田数量</label>
+              <input id="plannerLandCount" class="input" type="number" min="1" step="1" inputmode="numeric" value="100" />
+            </div>
+          </div>
+
+          <div class="small farm-settings-note">这里会自动保存；进入一键规划时会直接按这组设置计算。</div>
+        </section>
+
+        <section class="panel start-panel">
+          <div class="panel-head">
+            <div class="panel-icon">➕</div>
+            <div><h2>整块菜地种植打卡</h2><p>新种下或同步已有作物，都从这里接管这一整块菜地。</p></div>
+          </div>
+
+          <div class="mode-tabs" role="tablist" aria-label="打卡方式">
+            <label class="mode-tab" for="startModePlant">
+              <input id="startModePlant" type="radio" name="startMode" value="plant" checked />
+              <span>新种下</span>
+            </label>
+            <label class="mode-tab" for="startModeSync">
+              <input id="startModeSync" type="radio" name="startMode" value="sync" />
+              <span>已经种下手动输入时间</span>
+            </label>
+          </div>
+
+          <div class="start-mode-panel" data-start-panel="plant">
+            <div class="field">
+              <label for="cropSelect">作物类型</label>
+              <select id="cropSelect" class="select"></select>
+            </div>
+
+            <label class="check-row" for="plantSunbin">
+              <input id="plantSunbin" type="checkbox" />
+              <span><strong>这批作物已用孙膑催熟</strong> 按作物原始成熟时间固定减少 50%。如果孙膑是种下后才刷出来，也可以在作物卡片里再打卡。</span>
+            </label>
+
+            <div class="two-actions">
+              <button class="btn primary" id="plantBtn">🌱 种下并首次浇水</button>
+              <button class="btn amber" id="plantNoWaterBtn">🌿 仅种下，未浇水</button>
+            </div>
+
+            <div class="notice warn" id="replaceHint">如果当前已有作物，再次种植会询问是否覆盖当前记录。</div>
+          </div>
+
+          <div class="start-mode-panel is-hidden" data-start-panel="sync">
+            <form id="syncForm" class="sync-form">
+              <div class="field">
+                <label for="syncCropSelect">作物成熟时间</label>
+                <select id="syncCropSelect" class="select"></select>
+              </div>
+
+              <div class="sync-section-title">游戏显示剩余成熟</div>
+              <div class="time-input-grid">
+                <label class="time-field" for="syncRemainHours">
+                  <span>小时</span>
+                  <input id="syncRemainHours" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="2" />
+                </label>
+                <label class="time-field" for="syncRemainMinutes">
+                  <span>分钟</span>
+                  <input id="syncRemainMinutes" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="03" />
+                </label>
+              </div>
+
+              <fieldset class="sync-fieldset">
+                <legend>当前自浇状态</legend>
+                <label class="option-row" for="syncModeReady">
+                  <input id="syncModeReady" type="radio" name="syncWaterMode" value="ready" checked />
+                  <span><strong>现在可以浇水</strong> 填游戏提示的本次可减少时间。</span>
+                </label>
+                <div class="sync-mode-panel" data-sync-panel="ready">
+                  <div class="time-input-grid">
+                    <label class="time-field" for="syncReduceHours">
+                      <span>减少小时</span>
+                      <input id="syncReduceHours" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+                    </label>
+                    <label class="time-field" for="syncReduceMinutes">
+                      <span>减少分钟</span>
+                      <input id="syncReduceMinutes" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="50" />
+                    </label>
+                  </div>
+                </div>
+
+                <label class="option-row" for="syncModeWait">
+                  <input id="syncModeWait" type="radio" name="syncWaterMode" value="wait" />
+                  <span><strong>还不能浇水</strong> 填距离下一次可浇还要等多久。</span>
+                </label>
+                <div class="sync-mode-panel is-hidden" data-sync-panel="wait">
+                  <div class="time-input-grid">
+                    <label class="time-field" for="syncWaitHours">
+                      <span>等待小时</span>
+                      <input id="syncWaitHours" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+                    </label>
+                    <label class="time-field" for="syncWaitMinutes">
+                      <span>等待分钟</span>
+                      <input id="syncWaitMinutes" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="30" />
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              <label class="check-row" for="syncSunbin">
+                <input id="syncSunbin" type="checkbox" />
+                <span><strong>这批作物已经用过孙膑催熟</strong> 如果游戏剩余时间已经包含孙膑效果，请勾选。</span>
+              </label>
+
+              <div class="field">
+                <label for="syncFriendCount">已发生好友浇水次数（可选）</label>
+                <input id="syncFriendCount" class="input" type="number" min="0" max="4" step="1" inputmode="numeric" placeholder="0" />
+                <div class="small">只用于限制后续还可记录几次，不会重复减少成熟时间。</div>
+              </div>
+
+              <button class="btn primary sync-submit" type="submit">⏱️ 同步并开始管理</button>
+            </form>
+
+            <div class="notice">
+              同步后会按游戏剩余成熟时间校准倒计时；历史浇水次数不会反推，后续自浇、好友浇水和提醒会继续正常打卡。
+            </div>
+          </div>
+        </section>
+
+        <section class="panel shortcut-panel">
+          <div class="panel-head">
+            <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">🐮</div>
+            <div><h2>牧场管理</h2><p>设置栏位、动物摊等级，并按 16h / 20h 数量批量管理收获提醒。</p></div>
+          </div>
+          <a class="btn primary full-link" href="ranch.html">打开牧场管理</a>
+        </section>
+
+        <section class="panel shortcut-panel">
+          <div class="panel-head">
+            <div class="panel-icon" style="background:#fef3c7;color:#b45309;">⚖️</div>
+            <div><h2>作物/动物性价比计算器</h2><p>按档案库数据比较作物收益、动物回本和经验效率。</p></div>
+          </div>
+          <a class="btn primary full-link" href="value-calculator.html">打开性价比计算器</a>
+        </section>
+
+        <section class="panel shortcut-panel data-transfer-panel">
+          <div class="panel-head">
+            <div class="panel-icon" style="background:#e0f2fe;color:#0369a1;">⇄</div>
+            <div><h2>在线迁移与本地备份</h2><p>上线后新网址会有新的本地数据空间。先导出，再到线上页面导入即可继续使用。</p></div>
+          </div>
+
+          <div class="data-transfer-actions">
+            <button class="btn primary" id="dataExportBtn" type="button">导出全部数据</button>
+            <label class="btn ghost data-file-label" for="dataImportFile">选择备份文件</label>
+            <input id="dataImportFile" class="data-file-input" type="file" accept=".json,application/json" />
+          </div>
+
+          <label class="field data-transfer-field" for="dataImportText">
+            <span>备份内容</span>
+            <textarea id="dataImportText" class="input data-transfer-text" placeholder="导出的备份内容会显示在这里；也可以粘贴线上要导入的 JSON。"></textarea>
+          </label>
+
+          <button class="btn amber full-link" id="dataImportBtn" type="button">导入并刷新页面</button>
+          <div class="small data-transfer-note" id="dataTransferStatus">导入会覆盖当前浏览器中的种植、档案、牧场、规划、计算器和兴趣圈记录；浏览器提醒权限需要在新网址重新开启。</div>
+        </section>
+      </aside>
+
+      <div class="content-column">
+        <section id="ranchHomeArea"></section>
+        <section id="farmArea"></section>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-zone" id="toastZone"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

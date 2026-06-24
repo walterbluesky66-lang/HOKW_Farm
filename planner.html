@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper · 一键规划</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body data-page="planner">
+  <div class="app planner-page">
+    <header class="hero">
+      <div>
+        <div class="pill">🧭 一键规划</div>
+        <h1>一键规划</h1>
+        <p class="lead">先看现在该种什么，再看接下来几轮大概会怎么排；完整一周计划可进入详情页查看。</p>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="index.html">← 返回打卡</a>
+        <a class="btn ghost" href="planner-detail.html">完整一周规划</a>
+        <a class="btn ghost" href="crop-archive.html">🗂️ 作物档案库</a>
+        <a class="btn ghost" href="rules.html">📘 种菜规则</a>
+      </div>
+    </header>
+
+    <main class="page-layout wide-page-layout">
+      <section class="panel planner-settings-panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">🧭</div>
+          <div><h2>规划参数</h2><p>农场等级和农田数量在主页面调整；这里设置周末目标和睡眠时间。</p></div>
+        </div>
+
+        <form id="plannerForm" class="planner-form">
+          <div class="form-grid planner-form-grid">
+            <div class="field">
+              <label for="plannerWeekendTarget">周末目标数量</label>
+              <input id="plannerWeekendTarget" class="input" type="number" min="0" step="10" inputmode="numeric" value="6000" />
+            </div>
+
+            <div class="field">
+              <label>睡觉时间</label>
+              <div class="time-input-grid planner-sleep-grid">
+                <label class="time-field" for="plannerSleepStart">
+                  <span>开始</span>
+                  <input id="plannerSleepStart" class="input" type="time" value="00:00" />
+                </label>
+                <label class="time-field" for="plannerSleepEnd">
+                  <span>结束</span>
+                  <input id="plannerSleepEnd" class="input" type="time" value="08:00" />
+                </label>
+              </div>
+            </div>
+
+            <div class="field planner-blessing-field">
+              <label class="check-row planner-check-row" for="plannerIncludeBlessing">
+                <input id="plannerIncludeBlessing" type="checkbox" checked />
+                <span>
+                  <strong>计入好友祈福</strong>
+                  <small>勾选后按成功祈福三倍产量估算周末目标；取消则只按基础双倍收获计算。</small>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="two-actions planner-actions">
+            <button class="btn primary" id="plannerStartBtn" type="submit">生成/更新规划</button>
+            <button class="btn ghost" id="plannerStopBtn" type="button">停止规划</button>
+          </div>
+        </form>
+
+        <div class="notice" id="plannerFormNote">规划会读取主页面农场设置和作物档案库数据。档案越完整，排期越准。</div>
+      </section>
+
+      <section id="plannerArea"></section>
+    </main>
+  </div>
+
+  <div class="toast-zone" id="toastZone"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

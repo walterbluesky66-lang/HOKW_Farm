@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <div class="app rule-page">
+    <header class="hero">
+      <div>
+        <div class="pill">📘 Farm Helper</div>
+        <h1>种菜规则</h1>
+        <p class="lead">这里集中放置作物成熟、自己浇水、好友浇水和进度条的计算规则。主页面只负责打卡和显示结果。</p>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="index.html">← 返回助手</a>
+      </div>
+    </header>
+
+    <main class="rules-layout">
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon">🌾</div>
+          <div><h2>作物类型</h2><p>当前版本按整块菜地的一批作物统一管理。</p></div>
+        </div>
+        <div class="rule-list">
+          <div class="rule-item"><strong>3分钟测试作物：</strong>仅用于开发、提醒和 BUG 验证，不做成熟时间向上取整。</div>
+          <div class="rule-item"><strong>5小时快速作物：</strong>用于补空档或短周期管理。</div>
+          <div class="rule-item"><strong>16小时经验作物：</strong>用于经验优先的稳定循环。</div>
+          <div class="rule-item"><strong>20小时经济作物：</strong>用于百工币收益优先，无经验收益。</div>
+          <div class="rule-item"><strong>28小时经验作物：</strong>用于高等级经验和长周期管理。</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#eff6ff;color:#0369a1;">💧</div>
+          <div><h2>自己浇水</h2><p>设 T 为作物原始成熟时间。</p></div>
+        </div>
+        <div class="rule-list">
+          <div class="rule-item"><strong>首次自浇：</strong>种下后立即可浇，减少 7%T。</div>
+          <div class="rule-item"><strong>最小间隔：</strong>后续自浇距离上次自浇至少 6%T，未到时间不能浇水或减时为 0。</div>
+          <div class="rule-item"><strong>最大间隔：</strong>后续自浇在 24%T 时达到最大减时；超过 24%T 后，最多仍只减少 7%T。</div>
+          <div class="rule-item"><strong>线性增长：</strong>在 6%T 到 24%T 区间内，减时从 1.75%T 线性增加到 7%T。</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#ecfdf5;color:#047857;">🤝</div>
+          <div><h2>好友浇水</h2><p>好友浇水和自己浇水分开累计。</p></div>
+        </div>
+        <div class="rule-list">
+          <div class="rule-item"><strong>单次减时：</strong>每次好友浇水减少 2.5%T。</div>
+          <div class="rule-item"><strong>次数上限：</strong>最多计入 4 次。</div>
+          <div class="rule-item"><strong>总减时上限：</strong>好友浇水最多减少 10%T。</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#fff7ed;color:#c2410c;">⏩</div>
+          <div><h2>孙膑催熟</h2><p>设 T 为作物原始成熟时间，孙膑催熟按原始时间固定减半。</p></div>
+        </div>
+        <div class="rule-list">
+          <div class="rule-item"><strong>固定减时：</strong>孙膑催熟减少 50%T，不按当前剩余时间计算。</div>
+          <div class="rule-item"><strong>示例：</strong>16 小时作物固定减少 8 小时；28 小时作物固定减少 14 小时。</div>
+          <div class="rule-item"><strong>使用次数：</strong>同一批作物只记录一次孙膑催熟。</div>
+          <div class="rule-item"><strong>和浇水叠加：</strong>孙膑催熟、自己浇水、好友浇水都会进入有效成长进度，并共同影响成熟提醒。</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#fef3c7;color:#b45309;">⏰</div>
+          <div><h2>成熟与进度</h2><p>进度条显示有效成长进度，不是单纯倒计时。</p></div>
+        </div>
+        <div class="rule-list">
+          <div class="rule-item"><strong>有效成长进度：</strong>当前时间 - 种植时间 + 所有浇水减少时间。</div>
+          <div class="rule-item"><strong>成熟判断：</strong>有效成长进度大于或等于 T 时，作物成熟。</div>
+          <div class="rule-item"><strong>进度推进：</strong>自然时间流逝会增长；首次浇水、好友浇水、后续自浇都会让进度条瞬间增长对应比例。</div>
+          <div class="rule-item"><strong>成熟时间取整：</strong>真实作物 5h/16h/20h/28h 向上取整到分钟；3分钟测试作物不取整。</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">🧭</div>
+          <div><h2>一键规划</h2><p>规划在二级页面展示，从开启时间起计算 7 天，按当前档案库和打卡状态动态调整。</p></div>
+        </div>
+        <div class="rule-list">
+          <div class="rule-item"><strong>档案绑定：</strong>主页种植或同步已有作物时，选择某个成熟时间档位后，会自动绑定当前等级可用的同档位最高等级档案作物；同等级有多条时，经验作物优先经验，20小时作物优先百工币。</div>
+          <div class="rule-item"><strong>普通收获期：</strong>周一 00:00 到周五 08:00 前，规划优先追求经验收益。</div>
+          <div class="rule-item"><strong>双倍收获期：</strong>周五 08:00 到下周一 00:00，目标未达成时只按当前等级可用的最高等级 20 小时高百工币作物推进目标；作物数量双倍，经验不翻倍；周五 08:00 前种下但在 08:00 后收获的作物，也按双倍窗口规划。</div>
+          <div class="rule-item"><strong>周末目标：</strong>20 小时高百工币作物目标默认 6000 个，可在规划页修改；一块田普通 30 个、双倍 60 个。</div>
+          <div class="rule-item"><strong>理论最短：</strong>排期按理论最短成熟时间推演，理论口径包含首次自浇、后续自浇和 4 次好友浇水；再结合睡眠避让决定实际可操作收获时间。</div>
+          <div class="rule-item"><strong>当前作物：</strong>正在种的作物会按当前状态继续理论推演，并在排期中显示后续好友浇水、自浇和收尾自浇节点；自浇按最长间隔安排，睡眠期间顺延到醒后。</div>
+          <div class="rule-item"><strong>数学模型：</strong>规划会滚动枚举“种某个作物”和“等待到关键窗口”两类动作，动态比较目标数量、双倍百工币、经验收益和睡眠空等。</div>
+          <div class="rule-item"><strong>睡眠时间：</strong>睡眠段内不安排自浇，且尽量避免成熟；模型会判断睡眠前先补短周期、提前种长周期，还是等待双倍窗口更划算。</div>
+          <div class="rule-item"><strong>实时调整：</strong>当前作物浇水、好友浇水、孙膑、收获或延误后，规划会从最新状态重新排期。</div>
+          <div class="rule-item"><strong>展示方式：</strong>排期用进度条式时间轨道展示，当前、种下、浇水、睡眠避让和收获会作为关键节点标在轨道上；周末目标进度用圆环显示作物获取数量。</div>
+          <div class="rule-item"><strong>手动确认：</strong>规划只给推荐，不会自动覆盖当前作物；点击“按规划种下”后才会写入当前作物卡片。</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#fff7ed;color:#c2410c;">⚖️</div>
+          <div><h2>性价比计算器</h2><p>用于比较不同作物在理论最短成熟时间下的单位时间收益。</p></div>
+        </div>
+        <div class="rule-list">
+          <div class="rule-item"><strong>用户输入：</strong>作物名称、一块田可获得经验、作物满级后可获得百工币、作物原始成熟时间。</div>
+          <div class="rule-item"><strong>理论最短成熟：</strong>按首次自浇、后续自浇满减、好友浇水 4 次估算，并沿用真实作物成熟时间向上取整到分钟的规则。</div>
+          <div class="rule-item"><strong>孙膑催熟：</strong>开启后，按原始成熟时间固定减少 50%。例如 16 小时作物固定减少 8 小时，28 小时作物固定减少 14 小时；再与浇水减时一起计算单位时间收益。</div>
+          <div class="rule-item"><strong>孙膑周期总收益：</strong>开启孙膑后，计算器会取当前录入作物中“孙膑后成熟最慢”的时间作为共同对比窗口。短周期作物成熟后，剩余时间按同作物普通理论效率折算，避免只看短时间每小时效率。</div>
+          <div class="rule-item"><strong>经验效率：</strong>一块田经验 ÷ 理论最短成熟小时数。</div>
+          <div class="rule-item"><strong>百工币效率：</strong>满级后一块田百工币 ÷ 理论最短成熟小时数。</div>
+          <div class="rule-item"><strong>数据范围：</strong>计算器只做收益对比，独立保存到本地浏览器，不会改变当前种植打卡记录。</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#f5f3ff;color:#7c3aed;">🧪</div>
+          <div><h2>预留模块</h2><p>药物作物暂时不参与主菜地收益计算。</p></div>
+        </div>
+        <div class="rule-list">
+          <div class="rule-item"><strong>药物地块：</strong>当前不参与经验、百工币收益，也不混入主菜地计算。</div>
+          <div class="rule-item"><strong>后续方向：</strong>药物配方、独立成熟提醒、材料库存、采集计划。</div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

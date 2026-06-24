@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper · 作物/动物性价比计算器</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body data-page="value">
+  <div class="app value-page">
+    <header class="hero">
+      <div>
+        <div class="pill">⚖️ 作物/动物性价比计算器</div>
+        <h1>作物/动物性价比计算器</h1>
+        <p class="lead">作物按理论最短成熟时间比较收益；动物按催产收获时间、动物摊等级、饲料成本和回本周期比较收益。</p>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="index.html">← 返回打卡</a>
+        <a class="btn ghost" href="crop-archive.html">🗂️ 档案库</a>
+        <a class="btn ghost" href="ranch.html">🐮 牧场管理</a>
+        <a class="btn ghost" href="rules.html">📘 种菜规则</a>
+      </div>
+    </header>
+
+    <main class="page-layout wide-page-layout">
+      <section class="panel calculator-panel" id="valueCalculator">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#fef3c7;color:#b45309;">⚖️</div>
+          <div><h2>收益对比</h2><p>从档案库选择作物，自动按成熟时间和收益数据换算。</p></div>
+        </div>
+
+        <div class="notice good">
+          需要新增或编辑资料时，去 <a href="crop-archive.html">作物/动物档案库</a> 管理；这里会读取同一份本地档案。
+        </div>
+
+        <form id="valueForm" class="calculator-form">
+          <div class="field">
+            <label for="valueArchiveSelect">选择档案库作物</label>
+            <select id="valueArchiveSelect" class="select"></select>
+          </div>
+
+          <label class="check-row" for="valueSunbin">
+            <input id="valueSunbin" type="checkbox" />
+            <span><strong>启用孙膑催熟</strong> 按作物原始成熟时间固定减少 50%，例如 16 小时减少 8 小时，28 小时减少 14 小时。</span>
+          </label>
+
+          <div class="two-actions">
+            <button class="btn primary" type="submit">加入对比</button>
+            <button class="btn ghost" id="valueClearBtn" type="button">清空对比</button>
+          </div>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="calculator-toolbar">
+          <div>
+            <h3>对比结果</h3>
+            <p id="valueSummaryText">还没有录入作物。</p>
+          </div>
+          <label class="compact-field" for="valueSort">
+            <span>排序</span>
+            <select id="valueSort" class="select">
+              <option value="exp">经验效率优先</option>
+              <option value="coins">百工币效率优先</option>
+              <option value="cycleExp">孙膑周期经验总收益</option>
+              <option value="cycleCoins">孙膑周期百工币总收益</option>
+              <option value="time">成熟时间最短</option>
+              <option value="input">录入顺序</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="valueSummary" class="value-summary"></div>
+        <div id="valueResults" class="value-results"></div>
+
+        <div class="notice">
+          计算口径：理论最短成熟时间按“首次自浇 + 后续自浇满减 + 好友浇水 4 次”估算；开启孙膑催熟后，再按原始成熟时间固定减少一半，并额外比较同一孙膑周期内的总收益。
+        </div>
+      </section>
+
+      <section class="panel calculator-panel" id="animalValueCalculator">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">🐮</div>
+          <div><h2>动物收益对比</h2><p>按牧场动物摊等级计算产物售价、每轮净收益、回本周期和换养追平时间。</p></div>
+        </div>
+
+        <form id="valueAnimalForm" class="calculator-form">
+          <div class="form-grid animal-value-form-grid">
+            <div class="field">
+              <label for="valueAnimalArchiveSelect">选择档案库动物</label>
+              <select id="valueAnimalArchiveSelect" class="select"></select>
+            </div>
+            <label class="compact-field" for="valueAnimalBaselineSelect">
+              <span>对比基准</span>
+              <select id="valueAnimalBaselineSelect" class="select"></select>
+            </label>
+            <label class="compact-field" for="valueAnimalSort">
+              <span>排序</span>
+              <select id="valueAnimalSort" class="select">
+                <option value="exp">经验效率优先</option>
+                <option value="netCoins">每轮净百工币优先</option>
+                <option value="payback">回本最快</option>
+                <option value="duration">催产收获最短</option>
+                <option value="input">录入顺序</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="two-actions">
+            <button class="btn primary" type="submit">加入动物对比</button>
+            <button class="btn ghost" id="valueAnimalClearBtn" type="button">清空动物对比</button>
+          </div>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="calculator-toolbar">
+          <div>
+            <h3>动物对比结果</h3>
+            <p id="valueAnimalSummaryText">还没有选择动物。</p>
+          </div>
+        </div>
+
+        <div id="valueAnimalSummary" class="value-summary"></div>
+        <div id="valueAnimalResults" class="value-results"></div>
+
+        <div class="notice">
+          动物口径：催产收获时间为原始成熟时间的 3/4；产物售价按当前牧场保存的动物摊等级加成；回本和换养追平都按购买价减回收价后的净投入计算。
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-zone" id="toastZone"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper · 兴趣圈经验记录</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body data-page="interest-circle">
+  <div class="app interest-page">
+    <header class="hero">
+      <div>
+        <div class="pill">王者荣耀世界 · 兴趣圈</div>
+        <h1>兴趣圈经验记录</h1>
+        <p class="lead">每天录入各组 TAG 的累计经验，自动和最近一次历史记录比较，检查今日是否拿满 206 点，并按 8200 目标推算达标日期。</p>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="index.html">← 返回打卡</a>
+        <button class="btn ghost" id="interestResetDateBtn" type="button">回到今天</button>
+      </div>
+    </header>
+
+    <main class="page-layout wide-page-layout interest-layout">
+      <section class="panel interest-panel">
+        <div class="panel-head">
+          <div class="panel-icon interest-icon">TAG</div>
+          <div>
+            <h2>每日录入</h2>
+            <p>输入游戏里显示的当前累计经验；今日新增和离满额差值会自动计算。</p>
+          </div>
+        </div>
+
+        <div class="interest-datebar">
+          <button class="btn ghost" id="interestPrevDayBtn" type="button">上一天</button>
+          <label class="compact-field interest-date-field" for="interestDate">
+            <span>查看日期</span>
+            <input id="interestDate" class="input" type="date" />
+          </label>
+          <button class="btn ghost" id="interestNextDayBtn" type="button">下一天</button>
+        </div>
+
+        <div class="interest-summary" id="interestSummary"></div>
+        <div class="interest-entry-list" id="interestEntryList"></div>
+
+        <div class="notice interest-note">
+          今日新增 = 当前日期累计经验 - 最近一个有记录日期的累计经验；离满额差值 = 今日新增 - 206。负数表示今天还没拿满。
+        </div>
+      </section>
+
+      <section class="panel interest-panel">
+        <div class="panel-head">
+          <div class="panel-icon interest-icon secondary">编辑</div>
+          <div>
+            <h2>分类与 TAG 管理</h2>
+            <p>可以新增分类，也可以编辑分类名称和对应 TAG；已有分类不会被删除，避免历史经验丢失。</p>
+          </div>
+        </div>
+
+        <div class="interest-category-list" id="interestCategoryList"></div>
+
+        <form id="interestCategoryAddForm" class="interest-category-add-card">
+          <div>
+            <h3>新增分类</h3>
+            <p>给新的兴趣圈 TAG 单独建一张卡片。</p>
+          </div>
+          <div class="form-grid interest-category-grid">
+            <div class="field">
+              <label for="interestNewCategoryTitle">分类名称</label>
+              <input id="interestNewCategoryTitle" class="input" type="text" maxlength="24" placeholder="例如：斗战之志" />
+            </div>
+            <div class="field interest-tags-field">
+              <label for="interestNewCategoryTags">分类下的 TAG</label>
+              <textarea id="interestNewCategoryTags" class="input" rows="3" placeholder="#斗战之志 #孙尚香 #出片需要趁热打铁"></textarea>
+            </div>
+          </div>
+          <button class="btn primary" type="submit">新增分类</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-zone" id="interestToastZone"></div>
+
+  <script src="interest-circle.js"></script>
+</body>
+</html>

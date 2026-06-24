@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper · 作物/动物档案库</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body data-page="archive">
+  <div class="app archive-page">
+    <header class="hero">
+      <div>
+        <div class="pill">🗂️ 作物/动物档案库</div>
+        <h1>作物/动物档案库</h1>
+        <p class="lead">集中录入作物和动物资料。性价比计算器、牧场栏位和一键规划会读取这里保存的本地档案。</p>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="index.html">← 返回打卡</a>
+        <a class="btn ghost" href="ranch.html">🐮 牧场管理</a>
+        <a class="btn ghost" href="rules.html">📘 种菜规则</a>
+      </div>
+    </header>
+
+    <main class="page-layout wide-page-layout">
+      <section class="panel archive-panel" id="cropArchive">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#ecfdf5;color:#047857;">🗂️</div>
+          <div><h2>作物资料</h2><p>保存后会立即写入当前浏览器，性价比计算器同步读取。</p></div>
+        </div>
+
+        <form id="archiveForm" class="archive-form">
+          <input id="archiveEditingId" type="hidden" />
+
+          <div class="field">
+            <label for="archiveName">农作物名称</label>
+            <input id="archiveName" class="input" type="text" maxlength="24" placeholder="例如：旭日辣椒" />
+          </div>
+
+          <div class="form-grid archive-form-grid">
+            <div class="field">
+              <label for="archiveCropTime">成熟时间</label>
+              <select id="archiveCropTime" class="select"></select>
+            </div>
+            <div class="field">
+              <label for="archiveCoins">满级百工币</label>
+              <input id="archiveCoins" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+            </div>
+            <div class="field">
+              <label for="archiveExp">可获得经验</label>
+              <input id="archiveExp" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+            </div>
+            <div class="field">
+              <label for="archiveLevel">所需农场等级</label>
+              <input id="archiveLevel" class="input" type="number" min="1" step="1" inputmode="numeric" placeholder="1" />
+            </div>
+          </div>
+
+          <div class="two-actions archive-actions">
+            <button class="btn primary" type="submit" id="archiveSaveBtn">保存到档案库</button>
+            <button class="btn ghost is-hidden" type="button" id="archiveCancelBtn">取消编辑</button>
+          </div>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="archive-toolbar">
+          <div>
+            <h3>已收录作物</h3>
+            <p id="archiveSummaryText">还没有录入作物。</p>
+          </div>
+          <button class="btn ghost" id="archiveExportBtn" type="button">导出标准库</button>
+        </div>
+
+        <div id="archiveList" class="archive-list"></div>
+
+        <div class="archive-export is-hidden" id="archiveExportPanel">
+          <textarea id="archiveExportText" class="archive-export-text" readonly></textarea>
+        </div>
+
+        <div class="notice">
+          本机录入会立即保存到浏览器。需要发给别人直接使用时，把导出的标准库数据固化进网页文件。
+        </div>
+      </section>
+
+      <section class="panel archive-panel" id="animalArchive">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">🐮</div>
+          <div><h2>动物资料</h2><p>动物档案会用于牧场栏位、收获提醒和动物性价比计算。</p></div>
+        </div>
+
+        <form id="animalArchiveForm" class="archive-form">
+          <input id="animalArchiveEditingId" type="hidden" />
+
+          <div class="field">
+            <label for="animalArchiveName">动物名称</label>
+            <input id="animalArchiveName" class="input" type="text" maxlength="24" placeholder="例如：云不见" />
+          </div>
+
+          <div class="form-grid animal-archive-form-grid">
+            <div class="field">
+              <label for="animalArchiveLevel">所需农场等级</label>
+              <input id="animalArchiveLevel" class="input" type="number" min="1" step="1" inputmode="numeric" placeholder="1" />
+            </div>
+            <div class="field">
+              <label for="animalPurchasePrice">购买价格</label>
+              <input id="animalPurchasePrice" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="290000" />
+            </div>
+            <div class="field">
+              <label for="animalDuration">成熟时间</label>
+              <select id="animalDuration" class="select">
+                <option value="16">16小时高经验动物</option>
+                <option value="20">20小时高金币动物</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="animalFeedCost">收获预估饲料价格</label>
+              <input id="animalFeedCost" class="input" type="number" min="0" step="1" inputmode="numeric" value="3200" />
+            </div>
+            <div class="field">
+              <label for="animalProductSaleBase">满亲密度产物出售总价</label>
+              <input id="animalProductSaleBase" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+            </div>
+            <div class="field">
+              <label for="animalRecyclePrice">回收价格</label>
+              <input id="animalRecyclePrice" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="默认购买价一半" />
+            </div>
+            <div class="field">
+              <label for="animalExp">每轮经验</label>
+              <input id="animalExp" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="two-actions archive-actions">
+            <button class="btn primary" type="submit" id="animalArchiveSaveBtn">保存动物档案</button>
+            <button class="btn ghost is-hidden" type="button" id="animalArchiveCancelBtn">取消编辑</button>
+          </div>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="archive-toolbar">
+          <div>
+            <h3>已收录动物</h3>
+            <p id="animalArchiveSummaryText">还没有录入动物。</p>
+          </div>
+          <button class="btn ghost" id="animalArchiveExportBtn" type="button">导出动物标准库</button>
+        </div>
+
+        <div id="animalArchiveList" class="archive-list"></div>
+
+        <div class="archive-export is-hidden" id="animalArchiveExportPanel">
+          <textarea id="animalArchiveExportText" class="archive-export-text" readonly></textarea>
+        </div>
+
+        <div class="notice">
+          动物购买价格、饲料费、产物基础售价和回收价格均按百工币原始数值录入；界面会自动显示万元口径辅助判断。
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-zone" id="toastZone"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
