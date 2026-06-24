@@ -204,8 +204,10 @@
         <section class="panel shortcut-panel data-transfer-panel">
           <div class="panel-head">
             <div class="panel-icon" style="background:#e0f2fe;color:#0369a1;">⇄</div>
-            <div><h2>在线迁移与本地备份</h2><p>上线后新网址会有新的本地数据空间。先导出，再到线上页面导入即可继续使用。</p></div>
+            <div><h2>云存档与本地备份</h2><p>登录后自动同步；未登录时仍保存在当前浏览器。</p></div>
           </div>
+
+          <div id="cloudSyncMount" class="cloud-sync-mount"></div>
 
           <div class="data-transfer-actions">
             <button class="btn primary" id="dataExportBtn" type="button">导出全部数据</button>
@@ -219,7 +221,7 @@
           </label>
 
           <button class="btn amber full-link" id="dataImportBtn" type="button">导入并刷新页面</button>
-          <div class="small data-transfer-note" id="dataTransferStatus">导入会覆盖当前浏览器中的种植、档案、牧场、规划、计算器和兴趣圈记录；浏览器提醒权限需要在新网址重新开启。</div>
+          <div class="small data-transfer-note" id="dataTransferStatus">导入会覆盖当前浏览器中的种植、档案、牧场、规划、计算器和兴趣圈记录；浏览器提醒权限需要在新网址重新开启。云存档恢复前会自动保存一份本地恢复副本。</div>
         </section>
       </aside>
 
@@ -232,6 +234,10 @@
 
   <div class="toast-zone" id="toastZone"></div>
 
+  <script src="storage-keys.js"></script>
+  <script src="cloud-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="cloud-sync.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

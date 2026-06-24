@@ -4,8 +4,8 @@
 
 ## 当前形态
 
-- 无后端，直接在浏览器中运行。
-- 数据保存在 `localStorage`。
+- 静态网页，直接在浏览器中运行；Cloudflare Pages 发布时仍只发布 `dist/`。
+- 数据默认保存在 `localStorage`；配置 Supabase 后可用邮箱验证码登录并自动同步私有云存档。
 - 当前管理对象是一整块菜地的一批作物，不是多块独立菜地。
 - 牧场按栏位总数管理动物数量，用户只填写 16 小时动物和 20 小时动物各多少只，并按两组批次计时。
 - 暂不管理药物作物，也不把药物作物混入经验或百工币收益计算。
@@ -29,10 +29,14 @@
 - `interest-circle.html`：兴趣圈经验记录二级页面，负责每日累计经验录入、历史查看和 TAG 分类管理。
 - `style.css`：页面样式。
 - `favicon.svg`：站点图标，避免线上浏览器请求默认图标时产生 404。
+- `storage-keys.js`：统一维护可导出、可导入、可云同步的本地数据键。
+- `cloud-config.js`：本地空配置占位；构建到 `dist/` 时会按 Cloudflare 环境变量生成线上配置。
+- `cloud-sync.js`：Supabase 邮箱验证码登录、云端快照恢复和自动上传逻辑。
 - `app.js`：作物配置、动物档案、浇水规则、进度计算、牧场批次、提醒、一键规划和本地存储逻辑。
 - `interest-circle.js`：兴趣圈独立脚本，使用单独 `localStorage` 数据，不接入 `app.js`。
 - `package.json`：提供 `npm run build` 发布脚本。
 - `scripts/build-site.js`：生成 Cloudflare Pages 发布目录 `dist/`，只复制网站运行必需文件。
+- `supabase/user_snapshots.sql`：Supabase 私有云存档表、RLS 策略和更新时间触发器。
 - `wzry_world_farm_helper_progress_audio (1).html`：原始单文件版本，保留作参考。
 - `TODO.md`：后续开发计划。
 
@@ -165,9 +169,14 @@
 - 8200 达标剩余天数按最新可用累计经验和每天满额 `206` 推算。
 - TAG 分类可新增；已有分类在各自卡片内单独编辑分类名称和对应 TAG，不提供整类删除入口，只能删除分类下的单个 TAG，以保留历史经验记录。
 
-## 在线迁移与本地备份
+## 云存档与本地备份
 
-主页左侧新增“在线迁移与本地备份”卡片，用于把当前浏览器里的核心业务数据导出为 JSON，再到线上新网址导入。导出的数据包括：
+主页左侧“云存档与本地备份”卡片支持两种方式：
+
+- 未登录或未配置 Supabase 时，继续使用本地浏览器数据，并可手动导出/导入 JSON。
+- 配置 Supabase 后，用户用邮箱验证码登录；登录后读取 `primary` 云端快照，后续本地数据变化会延迟几秒自动上传。
+
+云端快照沿用本地备份 JSON 结构，包含：
 
 - 种植打卡。
 - 作物/动物档案库。
@@ -176,7 +185,7 @@
 - 一键规划设置与进度。
 - 兴趣圈经验记录。
 
-浏览器通知权限和已提醒标记不会导出。线上网址属于新的浏览器域名空间，首次使用时需要重新开启提醒权限。
+浏览器通知权限和已提醒标记不会导出，也不会进入云端快照。云端恢复前会在当前浏览器保存一份非同步恢复副本，避免误覆盖后完全找不回本地数据。
 
 ## 理论最快与最佳收尾浇水
 
@@ -190,7 +199,7 @@
 
 ## 在线部署
 
-第一版在线化按静态网站部署，不接账号登录和云同步。推荐使用 Cloudflare Pages：
+在线发布使用 Cloudflare Pages：
 
 ```powershell
 npm run build
@@ -204,4 +213,17 @@ npm run build
 
 不要把项目根目录直接作为公网目录发布，因为根目录包含 `AGENTS.md`、`README.md`、`TODO.md`、Excel 源文件和原始参考 HTML。`dist/` 已在 `.gitignore` 中忽略，部署平台会在每次发布时重新生成。
 
-如果后续接入 Supabase 云同步，应先增加账号登录、RLS 权限策略、本地数据迁移和离线同步策略，再替换当前 `localStorage` 存储层。
+要启用云存档，还需要在 Cloudflare Pages 的环境变量中配置：
+
+- `HOKW_SUPABASE_URL`
+- `HOKW_SUPABASE_PUBLISHABLE_KEY`
+
+`scripts/build-site.js` 会把这两个值写入 `dist/cloud-config.js`。前端只使用 Supabase publishable key；不要把 service role 或 secret key 放进仓库或前端环境变量。
+
+## Supabase 配置
+
+1. 创建 Supabase 项目，开启 Authentication 的 Email provider。
+2. 如果希望输入数字验证码，在邮件模板中使用 `{{ .Token }}`；如果使用默认 magic link，当前页面的验证码输入不会完成登录。
+3. 打开 Supabase SQL Editor，执行 `supabase/user_snapshots.sql`。
+4. 在 Cloudflare Pages 项目里添加 `HOKW_SUPABASE_URL` 和 `HOKW_SUPABASE_PUBLISHABLE_KEY`，然后重新部署。
+5. 用两个不同邮箱验证：A 账号只能恢复 A 的存档，不能读写 B 的存档。

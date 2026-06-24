@@ -13,6 +13,8 @@ const siteFiles = [
   "planner-detail.html",
   "interest-circle.html",
   "style.css",
+  "storage-keys.js",
+  "cloud-sync.js",
   "app.js",
   "interest-circle.js",
   "favicon.svg"
@@ -30,4 +32,17 @@ for (const file of siteFiles) {
   fs.copyFileSync(source, target);
 }
 
+const cloudConfig = {
+  supabaseUrl: process.env.HOKW_SUPABASE_URL || "",
+  supabasePublishableKey: process.env.HOKW_SUPABASE_PUBLISHABLE_KEY || "",
+  syncEnabled: Boolean(process.env.HOKW_SUPABASE_URL && process.env.HOKW_SUPABASE_PUBLISHABLE_KEY)
+};
+
+fs.writeFileSync(
+  path.join(distDir, "cloud-config.js"),
+  `window.HOKW_CLOUD_CONFIG = Object.freeze(${JSON.stringify(cloudConfig, null, 2)});\n`,
+  "utf8"
+);
+
 console.log(`Copied ${siteFiles.length} files to ${path.relative(rootDir, distDir)}`);
+console.log(`Cloud sync config: ${cloudConfig.syncEnabled ? "enabled" : "disabled"}`);

@@ -2,3 +2,6 @@ dist/
 node_modules/
 HOKW_Farm_cloudflare_pages.zip
 *.xlsx
+.env
+.env.*
+!.env.example

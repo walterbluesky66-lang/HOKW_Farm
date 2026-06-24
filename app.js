@@ -8,7 +8,7 @@
     const ANIMAL_VALUE_CALCULATOR_KEY = "wzry-world-farm-animal-value-calculator-v1";
     const PLANNER_KEY = "wzry-world-farm-planner-v1";
     const INTEREST_CIRCLE_KEY = "wzry-world-interest-circle-v1";
-    const PORTABLE_DATA_VERSION = 1;
+    const PORTABLE_DATA_VERSION = window.HOKW_STORAGE?.portableDataVersion || 1;
     const MINUTE = 60 * 1000;
     const HOUR = 60 * MINUTE;
     const DAY = 24 * HOUR;
@@ -38,7 +38,7 @@
       { key: "h16", durationHours: 16, label: "16小时动物", shortLabel: "16h", role: "高经验", countInputId: "ranchCount16", remainHoursId: "ranchRemainHours16", remainMinutesId: "ranchRemainMinutes16" },
       { key: "h20", durationHours: 20, label: "20小时动物", shortLabel: "20h", role: "高百工币", countInputId: "ranchCount20", remainHoursId: "ranchRemainHours20", remainMinutesId: "ranchRemainMinutes20" }
     ];
-    const PORTABLE_STORAGE_KEYS = [
+    const PORTABLE_STORAGE_KEYS = window.HOKW_STORAGE?.portableKeys || [
       { key: STORAGE_KEY, label: "种植打卡" },
       { key: VALUE_CALCULATOR_KEY, label: "作物对比" },
       { key: VALUE_CALCULATOR_OPTIONS_KEY, label: "计算器选项" },
@@ -843,6 +843,10 @@
     }
 
     function buildPortableData() {
+      if (window.HOKW_STORAGE?.buildPortableData) {
+        return window.HOKW_STORAGE.buildPortableData(window.location.href);
+      }
+
       const storage = {};
       const summary = [];
 
@@ -928,24 +932,33 @@
         return;
       }
 
-      const storage = payload?.storage && typeof payload.storage === "object" ? payload.storage : null;
-      if (!storage) {
-        showToast("备份格式不对", "没有找到可导入的本地数据。", "warn");
-        return;
-      }
-
-      const nextValues = [];
-      for (const item of PORTABLE_STORAGE_KEYS) {
-        if (!Object.prototype.hasOwnProperty.call(storage, item.key)) continue;
-        const rawValue = storage[item.key];
-        const value = typeof rawValue === "string" ? rawValue : JSON.stringify(rawValue);
-        try {
-          JSON.parse(value);
-        } catch (err) {
-          showToast("备份内容有误", `${item.label} 数据无法解析，已停止导入。`, "warn");
+      let nextValues = [];
+      if (window.HOKW_STORAGE?.validatePortableData) {
+        const validation = window.HOKW_STORAGE.validatePortableData(payload);
+        if (!validation.ok) {
+          showToast("备份格式不对", validation.message, "warn");
           return;
         }
-        nextValues.push({ ...item, value });
+        nextValues = validation.items;
+      } else {
+        const storage = payload?.storage && typeof payload.storage === "object" ? payload.storage : null;
+        if (!storage) {
+          showToast("备份格式不对", "没有找到可导入的本地数据。", "warn");
+          return;
+        }
+
+        for (const item of PORTABLE_STORAGE_KEYS) {
+          if (!Object.prototype.hasOwnProperty.call(storage, item.key)) continue;
+          const rawValue = storage[item.key];
+          const value = typeof rawValue === "string" ? rawValue : JSON.stringify(rawValue);
+          try {
+            JSON.parse(value);
+          } catch (err) {
+            showToast("备份内容有误", `${item.label} 数据无法解析，已停止导入。`, "warn");
+            return;
+          }
+          nextValues.push({ ...item, value });
+        }
       }
 
       if (!nextValues.length) {
@@ -956,9 +969,17 @@
       const confirmed = window.confirm(`导入会覆盖当前浏览器中的 ${nextValues.length} 组本地数据。确认继续吗？`);
       if (!confirmed) return;
 
-      nextValues.forEach(item => {
-        localStorage.setItem(item.key, item.value);
-      });
+      if (window.HOKW_STORAGE?.applyPortableData) {
+        const result = window.HOKW_STORAGE.applyPortableData(payload);
+        if (!result.ok) {
+          showToast("导入失败", result.message, "warn");
+          return;
+        }
+      } else {
+        nextValues.forEach(item => {
+          localStorage.setItem(item.key, item.value);
+        });
+      }
 
       updateDataTransferStatus(`已导入 ${formatNumber(nextValues.length)} 组本地数据，页面正在刷新。`);
       showToast("导入完成", "页面会刷新，并按导入后的数据重新显示。");

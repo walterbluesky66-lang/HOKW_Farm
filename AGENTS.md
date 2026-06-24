@@ -8,8 +8,8 @@
 
 当前形态：
 
-- 本地静态网页，无后端；可通过 `npm run build` 生成 `dist/`，用于 Cloudflare Pages 静态发布。
-- 数据保存在浏览器 `localStorage`。
+- 本地静态网页；可通过 `npm run build` 生成 `dist/`，用于 Cloudflare Pages 静态发布。
+- 数据默认保存在浏览器 `localStorage`；配置 Supabase 后可用邮箱验证码登录，并把现有可迁移数据作为私有云端 JSON 快照自动同步。
 - 当前只管理一整块菜地的一批作物，不管理多块独立菜地。
 - 牧场按 1-12 个栏位总数管理动物数量，用户只填写 16 小时动物和 20 小时动物各多少只，并按两组批次计时。
 - 支持浏览器通知、页面内提示和柔和提示音。
@@ -17,7 +17,7 @@
 - 支持牧场管理二级页面；牧场暂不纳入一键规划排期。
 - 支持兴趣圈经验记录二级页面；主页仅作为入口，兴趣圈逻辑独立放在 `interest-circle.html` 和 `interest-circle.js`，不接入农场、牧场或一键规划数据。
 - 暂不管理药物作物，也不把药物作物混入经验或百工币收益计算。
-- 第一版在线化只做静态发布和本地数据导出/导入；后续计划支持 Supabase 云同步。
+- 第一版云存档采用 Supabase Auth + RLS + `user_snapshots` JSON 快照；每个登录用户第一版只使用一个 `primary` 私有存档槽。
 
 ## 当前文件结构
 
@@ -31,10 +31,14 @@
 - `interest-circle.html`：兴趣圈经验记录二级页面，负责按日期录入每组 TAG 的累计经验、查看历史和维护 TAG 分类。
 - `style.css`：页面样式。
 - `favicon.svg`：站点图标，避免线上浏览器请求默认图标时产生 404。
+- `storage-keys.js`：统一维护可导出、可导入、可云同步的本地数据键。
+- `cloud-config.js`：本地空配置占位；构建到 `dist/` 时由 `scripts/build-site.js` 根据 Cloudflare 环境变量生成线上配置。
+- `cloud-sync.js`：Supabase 邮箱验证码登录、云端快照恢复和自动上传逻辑。
 - `app.js`：作物配置、动物档案、浇水规则、进度计算、牧场批次、提醒、一键规划和本地存储逻辑。
 - `interest-circle.js`：兴趣圈独立脚本，使用 `wzry-world-interest-circle-v1` 本地状态，不依赖 `app.js`。
 - `package.json`：提供 `npm run build` 发布脚本。
 - `scripts/build-site.js`：生成 Cloudflare Pages 发布目录 `dist/`，只复制网站运行必需文件。
+- `supabase/user_snapshots.sql`：Supabase 私有云存档表、RLS 策略和更新时间触发器。
 - `.gitignore`：忽略 `dist/`、`node_modules/` 和临时发布 ZIP。
 - `README.md`：项目规则和启动方式。
 - `TODO.md`：后续开发计划。
@@ -48,6 +52,7 @@
 - 保持本地静态网页可直接打开，不要引入必须构建才能运行的依赖，除非用户明确要求升级架构。
 - 发布到公网时使用 `dist/`，不要直接发布项目根目录；根目录包含交接文档、README、TODO、Excel 源文件和原始参考 HTML。
 - 线上站点为 `https://hokw-helper.pages.dev/`，通过 Cloudflare Pages 连接 GitHub 仓库 `walterbluesky66-lang/HOKW_Farm` 的 `main` 分支自动部署。只要用户要求修改、优化或编辑网站内容，且没有明确说“只本地修改/不要发布”，完成实质修改后默认应运行验证、更新交接日志、提交 Git commit 并 `git push origin main`，让 Cloudflare 自动更新线上站点。
+- 云存档前端只能使用 Supabase publishable key；不要把 service role、secret key 或数据库密码放进仓库、`cloud-config.js` 或 Cloudflare 前端环境变量。Cloudflare Pages 环境变量使用 `HOKW_SUPABASE_URL` 和 `HOKW_SUPABASE_PUBLISHABLE_KEY`。
 - 不要把药物作物混入主菜地收益计算。
 - 兴趣圈页面应保持可拆分：主页只保留入口，核心逻辑不写入 `app.js`，本地状态不要和农场、牧场、规划状态混用。
 - 保持中文用户文案自然、简洁；页面标题目前为 `Farm Helper`。
@@ -113,8 +118,9 @@
 - 周末目标进度在 `planner.html` 顶部 summary 中用圆环展示，口径是作物获取数量进度；旧的横向周末目标进度条已移除；二级页总体时间进度条的节点卡片在桌面端按上下交错挂在对应位置，窄屏端按顺序卡片展示；完整周计划在 `planner-detail.html` 中按“作物卡片 → 作物卡片”展示。
 - 兴趣圈经验记录页：默认内置 Excel 中 8 组 TAG，并把 `2026-06-20` 作为“前一天经验”、`2026-06-21` 作为“今天经验”初始历史记录；页面打开自动选中当天，可用上一天、下一天和日历查看/修改历史。
 - 兴趣圈录入的是每组 TAG 的累计经验；今日新增按当前日期累计值减去最近一个历史记录日累计值计算，离满额差值按 `今日新增 - 206` 显示，8200 达标剩余天数按每天满额 `206` 推算；比较基准按相对日期显示，如“昨日 · 617”；分类支持新增，已有分类在各自卡片内单独编辑分类名称和 TAG；已有分类不删除，只能删除分类下的单个 TAG，并可复制 TAG 文本。
-- 主页面新增“在线迁移与本地备份”卡片，可把种植打卡、作物/动物档案、作物/动物收益对比、牧场批次、一键规划和兴趣圈记录导出为 JSON，也可从备份 JSON 导入到当前浏览器；浏览器通知权限和已提醒标记不迁移。
-- 支持 `npm run build` 生成 `dist/` 静态发布目录，当前复制 `index.html`、所有二/三级页面、`style.css`、`app.js`、`interest-circle.js` 和 `favicon.svg`；`AGENTS.md`、`README.md`、`TODO.md`、Excel 和原始参考 HTML 不进入发布目录。
+- 主页面“云存档与本地备份”卡片可把种植打卡、作物/动物档案、作物/动物收益对比、牧场批次、一键规划和兴趣圈记录导出为 JSON，也可从备份 JSON 导入到当前浏览器；浏览器通知权限和已提醒标记不迁移。
+- 云存档第一版：所有页面加载 `storage-keys.js`、`cloud-config.js` 和 `cloud-sync.js`；未配置 Supabase 或未登录时保持本地模式；登录后读取 Supabase `user_snapshots` 的 `primary` 快照，云端有数据则覆盖本地并刷新，云端为空且本地有数据则初始化云端；登录状态下可迁移 localStorage key 变化会自动防抖上传完整 JSON 快照。
+- 支持 `npm run build` 生成 `dist/` 静态发布目录，当前复制 `index.html`、所有二/三级页面、`style.css`、`storage-keys.js`、`cloud-sync.js`、`app.js`、`interest-circle.js` 和 `favicon.svg`，并按环境变量生成 `dist/cloud-config.js`；`AGENTS.md`、`README.md`、`TODO.md`、`supabase/`、Excel 和原始参考 HTML 不进入发布目录。
 
 ## 本地验证方式
 
@@ -123,15 +129,21 @@
 ```powershell
 node --check E:\HOKW_Farm\app.js
 node --check E:\HOKW_Farm\interest-circle.js
+node --check E:\HOKW_Farm\storage-keys.js
+node --check E:\HOKW_Farm\cloud-sync.js
+node --check E:\HOKW_Farm\scripts\build-site.js
 npm run build
 ```
 
 手动验证：
 
-- 检查 `E:\HOKW_Farm\dist` 只包含发布必需文件：`index.html`、`rules.html`、`crop-archive.html`、`value-calculator.html`、`ranch.html`、`planner.html`、`planner-detail.html`、`interest-circle.html`、`style.css`、`app.js`、`interest-circle.js`、`favicon.svg`。
-- 确认 `dist` 不包含 `AGENTS.md`、`README.md`、`TODO.md`、`.xlsx` 和 `wzry_world_farm_helper_progress_audio (1).html`。
-- 在主页“在线迁移与本地备份”点击“导出全部数据”，确认会下载 `hokw-farm-helper-backup-*.json`，文本框中出现 JSON，且 summary 包含当前已有的本地数据项。
+- 检查 `E:\HOKW_Farm\dist` 只包含发布必需文件：`index.html`、`rules.html`、`crop-archive.html`、`value-calculator.html`、`ranch.html`、`planner.html`、`planner-detail.html`、`interest-circle.html`、`style.css`、`storage-keys.js`、`cloud-config.js`、`cloud-sync.js`、`app.js`、`interest-circle.js`、`favicon.svg`。
+- 确认 `dist` 不包含 `AGENTS.md`、`README.md`、`TODO.md`、`supabase/`、`.xlsx` 和 `wzry_world_farm_helper_progress_audio (1).html`，且不包含 Supabase service role、secret key 或数据库密码。
+- 未设置 `HOKW_SUPABASE_URL` 和 `HOKW_SUPABASE_PUBLISHABLE_KEY` 时运行 `npm run build`，确认 `dist/cloud-config.js` 里 `syncEnabled` 为 `false`，各页面仍可本地模式打开。
+- 设置 Cloudflare Pages 环境变量后重新部署，确认 `dist/cloud-config.js` 里只出现项目 URL 和 publishable key，不出现 secret key。
+- 在主页“云存档与本地备份”点击“导出全部数据”，确认会下载 `hokw-farm-helper-backup-*.json`，文本框中出现 JSON，且 summary 包含当前已有的本地数据项。
 - 使用导出的 JSON 在新浏览器配置或清空后的本地存储中测试导入，确认导入前有覆盖确认，导入后页面刷新并恢复种植、档案、牧场、规划和兴趣圈数据。
+- Supabase 真实项目验证：执行 `supabase/user_snapshots.sql` 后，用邮箱验证码登录；云端为空且本地有数据时应创建 `primary` 快照；另一个浏览器同邮箱登录应恢复云端数据；两个不同邮箱互相看不到对方快照；修改兴趣圈、牧场、规划或档案后，数秒内云端 `payload` 更新。
 - 用浏览器打开 `E:\HOKW_Farm\index.html`。
 - 点击顶部“兴趣圈”，确认能进入 `interest-circle.html` 并可返回主页面。
 - 首次打开 `interest-circle.html`，确认默认 8 组 TAG、当天日期自动选中且当天录入为空；切到 `2026-06-21` 时，8 行今日新增均为 `206`、离满额差值均为 `0`。
@@ -203,6 +215,12 @@ npm run build
 - 其他 Codex 对话也可以直接更新本文件，但不要删除旧日志，除非用户明确要求整理。
 
 ## 交接日志
+
+### 2026-06-24 - 接入 Supabase 云存档第一版
+
+- 改动：新增 `storage-keys.js` 统一维护可迁移/可同步的 9 组本地数据键；新增 `cloud-config.js` 本地空配置和 `cloud-sync.js` 云同步层，支持 Supabase 邮箱验证码登录、登录后云端快照优先恢复、云端为空时用本地数据初始化、可迁移数据变更后自动防抖上传；新增 `supabase/user_snapshots.sql`，包含 `user_snapshots` 表、RLS 策略和更新时间/版本触发器；所有页面接入云同步脚本，主页“在线迁移与本地备份”改为“云存档与本地备份”；`scripts/build-site.js` 构建时按 `HOKW_SUPABASE_URL` 和 `HOKW_SUPABASE_PUBLISHABLE_KEY` 生成 `dist/cloud-config.js`；`README.md`、`TODO.md`、`AGENTS.md` 已同步。
+- 验证：已运行 `node --check E:\HOKW_Farm\app.js`、`node --check E:\HOKW_Farm\interest-circle.js`、`node --check E:\HOKW_Farm\storage-keys.js`、`node --check E:\HOKW_Farm\cloud-sync.js`、`node --check E:\HOKW_Farm\scripts\build-site.js` 和 `npm run build`；已确认 `dist/` 只包含网页运行文件与生成的 `cloud-config.js`，未包含文档、`supabase/`、Excel、原始参考 HTML 或 secret/service role；已用假环境变量验证构建会生成 `syncEnabled: true` 的配置，再恢复为空配置；已用本地静态服务和无头 Chrome 验证 8 个页面可访问，390px 下 `scrollWidth/clientWidth` 均为 `390/390` 且无运行时异常；未配置 Supabase 时主页云登录表单隐藏，状态显示“云存档未配置”。
+- 后续注意：本次未使用真实 Supabase 项目验证邮箱验证码、RLS 和跨浏览器恢复；上线前需要在 Supabase 执行 `supabase/user_snapshots.sql`，在 Cloudflare Pages 配置 `HOKW_SUPABASE_URL` 与 `HOKW_SUPABASE_PUBLISHABLE_KEY` 后重新部署，并用两个邮箱确认账号隔离。前端只允许使用 publishable key，绝不能暴露 service role、secret key 或数据库密码。
 
 ### 2026-06-24 - 固化 GitHub 自动发布规则
 
