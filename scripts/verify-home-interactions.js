@@ -414,4 +414,35 @@ assert(
   "Planner should record the pre-sleep non-full self-watering event"
 );
 
+const plannerDisplayRecord = {
+  archiveId: "planner-test",
+  coinGain: 0,
+  crop: { short: "20h 高价值" },
+  doubleHarvest: false,
+  durationMs: 8 * 60 * 60 * 1000,
+  expGain: 0,
+  goal: "coins",
+  harvestAt: expectedSleepAwareHarvestAt,
+  locked: true,
+  matureAt: expectedSleepAwareMatureAt,
+  name: "planner test crop",
+  plantAt: plannerPlantAt,
+  reason: "",
+  sleepDelayMs: expectedSleepAwareHarvestAt - expectedSleepAwareMatureAt,
+  targetGain: 0,
+  type: "crop",
+  waterEvents: plannerCycle.waterEvents
+};
+const overviewHtml = plannerContext.renderPlannerOverview({ records: [plannerDisplayRecord] });
+const currentProgressHtml = plannerContext.renderCurrentPlannerProgress({ records: [plannerDisplayRecord] });
+
+assert(
+  overviewHtml.includes("实际") && overviewHtml.includes("成熟") && overviewHtml.includes("空窗"),
+  "Planner overview cards should show actual maturity and the sleep gap before harvest"
+);
+assert(
+  currentProgressHtml.includes("实际") && currentProgressHtml.includes("成熟") && currentProgressHtml.includes("空窗"),
+  "Current crop progress should show actual maturity and the sleep gap before harvest"
+);
+
 console.log("Home interaction and standard crop archive checks passed.");

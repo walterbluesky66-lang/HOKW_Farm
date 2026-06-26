@@ -4586,7 +4586,7 @@
             ${nodes.map(node => `
               <article class="planner-overview-card ${escapeHtml(node.lane)} ${escapeHtml(node.event.tone)}" style="left:${node.pct}%;">
                 <span>${formatPlannerWeekdayTime(node.event.at)}</span>
-                ${node.event.items.slice(0, 2).map(item => `<strong>${escapeHtml(formatPlannerOverviewItem(item))}</strong>`).join("")}
+                ${node.event.items.slice(0, 2).map(item => renderPlannerOverviewItem(item)).join("")}
                 ${node.event.items.length > 2 ? `<small>另 ${node.event.items.length - 2} 项</small>` : ""}
               </article>
             `).join("")}
@@ -4598,7 +4598,7 @@
 
     function buildPlannerOverviewEvents(records, now, maxItems) {
       const grouped = new Map();
-      const add = (at, action, name, tone) => {
+      const add = (at, action, name, tone, record = null) => {
         if (!Number.isFinite(at) || at < now - 2 * MINUTE) return;
         const key = Math.round(at / MINUTE);
         if (!grouped.has(key)) {
@@ -4607,7 +4607,10 @@
         const group = grouped.get(key);
         group.at = Math.min(group.at, at);
         group.tone = group.tone === tone ? tone : "mixed";
-        group.items.push({ action, name });
+        const overviewRecord = record || (String(action).includes("收") || String(action).includes("鏀")
+          ? records.find(candidate => candidate.harvestAt === at && candidate.name === name)
+          : null);
+        group.items.push({ action, name, record: overviewRecord });
       };
 
       records.forEach(record => {
@@ -4634,6 +4637,27 @@
       if (item.action.includes("种植")) return `种${item.name}`;
       if (item.action.includes("等待")) return `等${item.name}`;
       return `${item.action}${item.name}`;
+    }
+
+    function renderPlannerOverviewItem(item) {
+      const gapText = formatPlannerSleepGap(item?.record, true);
+      return `
+        <strong>${escapeHtml(formatPlannerOverviewItem(item))}</strong>
+        ${gapText ? `<small>${escapeHtml(gapText)}</small>` : ""}
+      `;
+    }
+
+    function getPlannerSleepGap(record) {
+      if (!record || !Number.isFinite(record.matureAt) || !Number.isFinite(record.harvestAt)) return null;
+      const gapMs = Math.max(0, Number(record.sleepDelayMs) || 0, record.harvestAt - record.matureAt);
+      return gapMs > 0 ? { matureAt: record.matureAt, gapMs } : null;
+    }
+
+    function formatPlannerSleepGap(record, compact = false) {
+      const gap = getPlannerSleepGap(record);
+      if (!gap) return "";
+      const matureText = compact ? formatPlannerTime(gap.matureAt) : formatPlannerDateTime(gap.matureAt);
+      return `实际 ${matureText} 成熟 · 空窗 ${formatDuration(gap.gapMs, true)}`;
     }
 
     function renderCurrentPlannerProgress(preview) {
@@ -4674,6 +4698,7 @@
                   ${current.sleepDelayMs > 0 ? `<span class="badge">睡眠避让</span>` : ""}
                 </div>
                 <h3>${escapeHtml(current.name)}</h3>
+                ${formatPlannerSleepGap(current) ? `<p>${escapeHtml(formatPlannerSleepGap(current))}</p>` : ""}
                 <p>${escapeHtml(current.crop.short)} · 预计 ${formatPlannerDateTime(current.harvestAt)} 收获</p>
               </div>
               <div class="planner-yield">
