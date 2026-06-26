@@ -5585,7 +5585,7 @@
                       <button class="btn primary" data-action="selfWater" ${matured || !waterHint.ready ? "disabled" : ""}><span class="btn-icon" aria-hidden="true">💧</span><span>我浇水了</span></button>
                       <button class="btn green" data-action="friendWater" ${matured || farm.friendWaterCount >= 4 ? "disabled" : ""}><span class="btn-icon" aria-hidden="true">🤝</span><span>好友浇水 +1</span></button>
                       <button class="btn blue" data-action="sunbin" ${matured || farm.sunbinUsed ? "disabled" : ""}><span class="btn-icon" aria-hidden="true">⏩</span><span>孙膑催熟</span></button>
-                      <button class="btn amber" data-action="harvest" ${!matured ? "disabled" : ""}><span class="btn-icon" aria-hidden="true">✅</span><span>收获完成</span></button>
+                      <button class="btn amber" data-action="harvest"><span class="btn-icon" aria-hidden="true">✅</span><span>收获完成</span></button>
                     </div>
                     <button class="btn rose farm-delete-action" data-action="delete"><span class="btn-icon" aria-hidden="true">🗑</span><span>删除记录</span></button>
                   </div>

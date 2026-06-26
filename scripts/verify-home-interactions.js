@@ -97,6 +97,16 @@ assert(
   );
 });
 
+const harvestButtonMatch = farmHeader.match(/<button class="btn amber" data-action="harvest"([^>]*)>/);
+assert(
+  harvestButtonMatch,
+  "Farm harvest action should render as a button in the farm card header"
+);
+assert(
+  !harvestButtonMatch[1].includes("disabled"),
+  "Farm harvest action should stay enabled even while the crop is still growing"
+);
+
 assert(
   farmHeader.includes('class="farm-name-line"'),
   "Farm action buttons should align with the crop title line"
