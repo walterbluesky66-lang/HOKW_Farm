@@ -21,7 +21,9 @@
 
 ## 当前文件结构
 
-- `index.html`：主页面入口，负责打卡、农场等级/农田数量设置、牧场提醒和结果展示。
+- `index.html`：主页面入口，负责打卡、牧场提醒、当前作物展示和顶部二级页入口。
+- `residence-settings.html`：居所设置二级页面，负责当前居所等级和农田数量。
+- `user-storage.html`：用户与存档管理二级页面，负责云存档登录、本地备份导出和导入。
 - `rules.html`：种菜规则二级页面。
 - `crop-archive.html`：作物/动物档案库二级页面，负责作物与动物资料录入、编辑和标准库导出。
 - `value-calculator.html`：作物/动物性价比计算器二级页面，负责作物收益、动物回本、排序和孙膑周期总收益分析。
@@ -96,9 +98,9 @@
 - 浏览器通知、页面内弹窗、柔和提示音。
 - 种菜规则二级页面。
 - 作物选择、成熟时间选择和排序选择已使用自定义下拉菜单，展开面板可显示图标、主副文案和选中状态。
-- 作物档案库二级页面：支持录入和编辑农作物名称、成熟时间、满级百工币、经验、所需农场等级。
+- 作物档案库二级页面：支持录入和编辑农作物名称、成熟时间、满级百工币、经验、所需居所等级。
 - 动物档案库已并入档案二级页面：支持录入和编辑动物名称、所需等级、购买价格、成熟时间、饲料费、满亲密度产物基础售价、回收价格和每轮经验。
-- 牧场管理二级页面：支持设置 1-12 个栏位、动物摊等级、16 小时动物数量和 20 小时动物数量；两类数量总和自动限制在栏位数内；每类动物自动采用当前农场等级可用的同档位最高等级档案，16 小时同等级优先经验，20 小时同等级优先每轮净收益；每类只填写一次剩余收获时间，点击“我收获了”后该组开始下一轮完整催产周期，也可清空该组。
+- 牧场管理二级页面：支持设置 1-12 个栏位、动物摊等级、16 小时动物数量和 20 小时动物数量；两类数量总和自动限制在栏位数内；每类动物自动采用当前居所等级可用的同档位最高等级档案，16 小时同等级优先经验，20 小时同等级优先每轮净收益；每类只填写一次剩余收获时间，点击“我收获了”后该组开始下一轮完整催产周期，也可清空该组。
 - 主页面牧场提醒区显示最近收获批次、可收动物数量和养殖数量，并在卡片顶部提供“收获”批次按钮；点击后复用牧场页“我收获了”逻辑，让对应 16h / 20h 批次开始下一轮完整催产周期。
 - 收益对比分析二级页面：从作物档案库选择作物加入对比，不再手动输入作物名称和收益；档案编辑后对比结果会读取最新数据。
 - 收益对比分析二级页面新增动物对比：按当前牧场保存的动物摊等级计算产物售价、每轮净百工币、经验效率、回本周期和换养追平时间，并可选择对比基准。
@@ -106,9 +108,10 @@
 - 动物档案库可导出标准库 JSON，用于后续固化到 `app.js` 的 `BUILT_IN_ANIMAL_ARCHIVE`。
 - 主页面已删除“提醒状态”“预留模块”、收益对比大面板和左侧重复的“牧场管理”快捷卡片；提醒入口保留在顶部按钮，收益对比入口放在“整块菜地种植打卡”面板下方。
 - 当前作物卡片的“我浇水了 / 好友浇水 +1 / 孙膑催熟 / 收获完成”互动按钮放在卡片顶部、农作物标题右侧同一标题行；删除记录按钮也在同一顶部操作区，按钮图标使用固定尺寸。
-- 主页面顶部右侧提供“一键规划”主入口；主页面新增“农场设置”面板，可调整当前农场等级和农田数量，并自动保存到规划状态。
+- 主页面顶部右侧提供“一键规划”主入口；`🌱 Farm Helper` 旁提供“居所设置”和“用户与存档管理”互动按钮；主页不再展开居所设置或存档管理大卡片。
+- `residence-settings.html` 二级页面可调整当前居所等级和农田数量，并自动保存到规划状态。
 - 主页种植或同步已有作物时，选择某个成熟时间档位后，会自动绑定当前等级可用的同档位最高等级档案作物；同等级有多条时，经验作物优先经验，20小时作物优先百工币。
-- `planner.html` 二级页面读取主页面保存的农场等级和农田数量，只填写周末高百工币目标和睡眠时间，并优先展示“现在该做什么”、总体时间进度和当前作物进度；完整 7 天动态排期在 `planner-detail.html` 三级页面查看。
+- `planner.html` 二级页面读取居所设置保存的居所等级和农田数量，只填写周末高百工币目标和睡眠时间，并优先展示“现在该做什么”、总体时间进度和当前作物进度；完整 7 天动态排期在 `planner-detail.html` 三级页面查看。
 - 一键规划会读取作物档案库，只使用 `farmLevel <= 当前等级` 的作物；每个成熟时间档位只取当前等级可用的最高等级档案作物参与规划；普通期经验优先，周五 08:00 到下周一 00:00 双倍期目标未达成时只按最高等级 20 小时高百工币作物推进目标，目标达成后转经验优先。
 - 一键规划使用滚动动态规划模型，会把“种某个作物”和“等待到关键窗口”都作为候选动作，比较目标数量、双倍百工币、经验收益和睡眠空等；双倍目标未达成时，目标进度只由当前等级最高的 20 小时高百工币作物推进。
 - 一键规划排期按理论最短成熟时间推演，理论口径包含首次自浇、后续自浇和 4 次好友浇水；再结合睡眠避让决定实际可操作收获时间。
@@ -119,7 +122,7 @@
 - 周末目标进度在 `planner.html` 顶部 summary 中用圆环展示，口径是作物获取数量进度；旧的横向周末目标进度条已移除；二级页总体时间进度条的节点卡片在桌面端按上下交错挂在对应位置，窄屏端按顺序卡片展示；完整周计划在 `planner-detail.html` 中按“作物卡片 → 作物卡片”展示。
 - 兴趣圈经验记录页：默认内置 Excel 中 8 组 TAG，并把 `2026-06-20` 作为“前一天经验”、`2026-06-21` 作为“今天经验”初始历史记录；页面打开自动选中当天，可用上一天、下一天和日历查看/修改历史。
 - 兴趣圈录入的是每组 TAG 的累计经验；今日新增按当前日期累计值减去最近一个历史记录日累计值计算，离满额差值按 `今日新增 - 206` 显示，8200 达标剩余天数按每天满额 `206` 推算；比较基准按相对日期显示，如“昨日 · 617”；分类支持新增，已有分类在各自卡片内单独编辑分类名称和 TAG；已有分类不删除，只能删除分类下的单个 TAG，并可复制 TAG 文本。
-- 主页面“云存档与本地备份”卡片可把种植打卡、作物/动物档案、作物/动物收益对比、牧场批次、一键规划和兴趣圈记录导出为 JSON，也可从备份 JSON 导入到当前浏览器；浏览器通知权限和已提醒标记不迁移。
+- “用户与存档管理”二级页面可把种植打卡、作物/动物档案、作物/动物收益对比、牧场批次、一键规划和兴趣圈记录导出为 JSON，也可从备份 JSON 导入到当前浏览器；浏览器通知权限和已提醒标记不迁移。
 - 云存档第一版：所有页面加载 `storage-keys.js`、`cloud-config.js` 和 `cloud-sync.js`；未配置 Supabase 或未登录时保持本地模式；登录后读取 Supabase `user_snapshots` 的 `primary` 快照，云端有数据则覆盖本地并刷新，云端为空且本地有数据则初始化云端；登录状态下可迁移 localStorage key 变化会自动防抖上传完整 JSON 快照。
 - 支持 `npm run build` 生成 `dist/` 静态发布目录，当前复制 `index.html`、所有二/三级页面、`style.css`、`storage-keys.js`、`cloud-sync.js`、`app.js`、`interest-circle.js` 和 `favicon.svg`，并按环境变量生成 `dist/cloud-config.js`；`AGENTS.md`、`README.md`、`TODO.md`、`supabase/`、Excel 和原始参考 HTML 不进入发布目录。
 
@@ -139,14 +142,16 @@ npm run build
 
 手动验证：
 
-- 检查 `E:\HOKW_Farm\dist` 只包含发布必需文件：`index.html`、`rules.html`、`crop-archive.html`、`value-calculator.html`、`ranch.html`、`planner.html`、`planner-detail.html`、`interest-circle.html`、`style.css`、`storage-keys.js`、`cloud-config.js`、`cloud-sync.js`、`app.js`、`interest-circle.js`、`favicon.svg`。
+- 检查 `E:\HOKW_Farm\dist` 只包含发布必需文件：`index.html`、`residence-settings.html`、`user-storage.html`、`rules.html`、`crop-archive.html`、`value-calculator.html`、`ranch.html`、`planner.html`、`planner-detail.html`、`interest-circle.html`、`style.css`、`storage-keys.js`、`cloud-config.js`、`cloud-sync.js`、`app.js`、`interest-circle.js`、`favicon.svg`。
 - 确认 `dist` 不包含 `AGENTS.md`、`README.md`、`TODO.md`、`supabase/`、`.xlsx` 和 `wzry_world_farm_helper_progress_audio (1).html`，且不包含 Supabase service role、secret key 或数据库密码。
 - 未设置 `HOKW_SUPABASE_URL` 和 `HOKW_SUPABASE_PUBLISHABLE_KEY` 时运行 `npm run build`，确认 `dist/cloud-config.js` 里 `syncEnabled` 为 `false`，各页面仍可本地模式打开。
 - 设置 Cloudflare Pages 环境变量后重新部署，确认 `dist/cloud-config.js` 里只出现项目 URL 和 publishable key，不出现 secret key。
-- 在主页“云存档与本地备份”点击“导出全部数据”，确认会下载 `hokw-farm-helper-backup-*.json`，文本框中出现 JSON，且 summary 包含当前已有的本地数据项。
+- 在 `user-storage.html` 点击“导出全部数据”，确认会下载 `hokw-farm-helper-backup-*.json`，文本框中出现 JSON，且 summary 包含当前已有的本地数据项。
 - 使用导出的 JSON 在新浏览器配置或清空后的本地存储中测试导入，确认导入前有覆盖确认，导入后页面刷新并恢复种植、档案、牧场、规划和兴趣圈数据。
 - Supabase 真实项目验证：执行 `supabase/user_snapshots.sql` 后，用邮箱验证码登录；云端为空且本地有数据时应创建 `primary` 快照；另一个浏览器同邮箱登录应恢复云端数据；两个不同邮箱互相看不到对方快照；修改兴趣圈、牧场、规划或档案后，数秒内云端 `payload` 更新。
 - 用浏览器打开 `E:\HOKW_Farm\index.html`。
+- 点击顶部 `🌱 Farm Helper` 旁的“居所设置”，确认能进入 `residence-settings.html`；修改居所等级和农田数量后刷新仍保留，并且 `planner.html` 继续读取同一组设置。
+- 点击顶部 `🌱 Farm Helper` 旁的“用户与存档管理”，确认能进入 `user-storage.html`；点击“导出全部数据”，确认文本框出现 `HOKW_Farm` 备份 JSON。
 - 点击顶部“兴趣圈”，确认能进入 `interest-circle.html` 并可返回主页面。
 - 首次打开 `interest-circle.html`，确认默认 8 组 TAG、当天日期自动选中且当天录入为空；切到 `2026-06-21` 时，8 行今日新增均为 `206`、离满额差值均为 `0`。
 - 在兴趣圈当天录入某行比 `2026-06-21` 多 `200` 的累计值，确认今日新增为 `200`，离满额差值为 `-6`；跳过一天录入时，确认会和最近一个有记录日比较。
@@ -174,7 +179,7 @@ npm run build
 - 在 `ranch.html` 为 20 小时动物批次保存时间，检查催产收获周期为 15 小时。
 - 在 `value-calculator.html` 加入动物对比，检查动物表显示摊位后售价、每轮净收益、经验效率、回本周期、换养追平和基准经验差；净收益小于或等于 0 时回本应显示“无法回本”。
 - 构造云不见为基准、瑞雪羊为目标的同周期动物对比，检查换养模型显示额外净投入 `520,000`、每轮多赚 `4,876`、理论追平约 `106.64` 轮、完整收获约 `107` 轮。
-- 在主页面调整农场等级和农田数量，检查刷新或进入 `planner.html` 后仍读取同一组设置。
+- 从主页顶部点击“居所设置”，在 `residence-settings.html` 调整居所等级和农田数量，检查刷新或进入 `planner.html` 后仍读取同一组设置。
 - 在 `planner.html` 填写周末目标数量和睡眠时间，检查规划区能显示下一步建议、总体时间进度条、当前作物进度条、周末目标进度、预计达标时间和可用作物数量。
 - 点击 `planner.html` 的“完整一周规划”，确认能进入 `planner-detail.html`，并按箭头卡片显示完整 7 天排期。
 - 构造已有当前作物场景，检查规划中当前作物按理论最短成熟时间显示，并包含后续好友浇水、自浇和收尾自浇节点。
@@ -183,12 +188,12 @@ npm run build
 - 构造周五 07:00、周末目标未达成场景，检查预计在双倍窗口收获时只给当前等级最高 20 小时高百工币作物累计目标。
 - 构造周五 08:00、30 块田、目标 `6000` 且勾选“计入好友祈福”场景，检查 3 轮 20 小时高百工币作物基础双倍为 `5400`，提示成功祈福 `5` 次即可达标、覆盖约 3 天常见范围 `6-15` 次，并确认后续不再追加第 4 轮高价值目标作物；把目标改成 `5600` 时应自动重算为成功祈福 `2` 次；取消勾选时应不显示祈福提示卡，并保留第 4 轮高价值目标作物。
 - 构造周末目标已达成场景，检查后续排期转为经验优先。
-- 调整主页面农场等级，检查新解锁作物能参与后续排期。
+- 调整居所设置页的居所等级，检查新解锁作物能参与后续排期。
 - 点击“按规划种下”，检查当前作物卡片显示“规划作物”，并绑定档案作物名。
 
 可选截图验证：
 
-- 如果可用，可以用 Edge/Chrome 无头截图检查 `index.html`、`interest-circle.html`、`crop-archive.html`、`ranch.html`、`value-calculator.html` 和 `rules.html` 是否正常渲染。
+- 如果可用，可以用 Edge/Chrome 无头截图检查 `index.html`、`residence-settings.html`、`user-storage.html`、`interest-circle.html`、`crop-archive.html`、`ranch.html`、`value-calculator.html` 和 `rules.html` 是否正常渲染。
 - 截图文件属于临时验证产物，验证后应删除。
 
 ## 对话结束更新规则
@@ -219,6 +224,12 @@ npm run build
 - 其他 Codex 对话也可以直接更新本文件，但不要删除旧日志，除非用户明确要求整理。
 
 ## 交接日志
+
+### 2026-06-26 - 主页设置与存档入口二级化
+
+- 改动：主页顶部 `🌱 Farm Helper` 旁新增“居所设置”和“用户与存档管理”互动按钮；原主页“农场设置”大卡片迁移为 `residence-settings.html` 二级页，并把用户可见文案改为“居所设置 / 居所等级”；原主页“云存档与本地备份”大卡片迁移为 `user-storage.html` 二级页，入口命名为“用户与存档管理”；`scripts/build-site.js`、`scripts/verify-home-interactions.js`、`README.md`、`AGENTS.md` 已同步。
+- 验证：已先运行 `npm run verify:home-interactions` 观察到新增回归检查按预期失败；完成修改后已运行 `node --check E:\HOKW_Farm\app.js`、`node --check E:\HOKW_Farm\interest-circle.js`、`node --check E:\HOKW_Farm\storage-keys.js`、`node --check E:\HOKW_Farm\cloud-sync.js`、`node --check E:\HOKW_Farm\scripts\build-site.js`、`node --check E:\HOKW_Farm\scripts\verify-home-interactions.js`、`npm run verify:home-interactions` 和 `npm run build`；已确认 `dist/` 包含 `residence-settings.html` 与 `user-storage.html`，不包含交接文档、`supabase/`、Excel、原始参考 HTML 或 secret/service role；已用本地预览和应用内浏览器验证宽屏下主页不再渲染居所/存档大卡片，顶部两个入口链接正确；`residence-settings.html` 修改居所等级 `9` 和农田数量 `66` 后刷新仍保留；`planner.html` 不含等级输入且提示读取居所设置；`user-storage.html` 云同步挂载、导出/导入入口存在，点击导出后文本框生成 `HOKW_Farm` 备份 JSON；390px 下主页、居所页、存档页均无横向溢出，浏览器错误日志为空。
+- 后续注意：本次只迁移入口和文案，不改动作物成熟、浇水、牧场收获、一键规划算法或云同步数据结构；历史交接日志里的“农场等级/农场设置”表述保留为当时记录。
 
 ### 2026-06-26 - 对齐首页顶部互动按钮
 

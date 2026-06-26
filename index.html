@@ -11,7 +11,11 @@
   <div class="app">
     <header class="hero">
       <div>
-        <div class="pill">🌱 Farm Helper</div>
+        <div class="brand-row">
+          <div class="pill">🌱 Farm Helper</div>
+          <a class="brand-action" href="residence-settings.html">🏡 居所设置</a>
+          <a class="brand-action" href="user-storage.html">👤 用户与存档管理</a>
+        </div>
         <h1>Farm Helper</h1>
         <p class="lead">玩家在游戏里种下作物或养殖动物后，在网页里打卡。本工具会根据作物浇水、动物催产收获时间和当前栏位状态，自动计算下一次该做什么。</p>
       </div>
@@ -48,31 +52,6 @@
 
     <main class="main">
       <aside>
-        <section class="panel farm-settings-panel">
-          <div class="panel-head">
-            <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">⚙️</div>
-            <div><h2>农场设置</h2><p>等级和田数会影响作物档案匹配、一键规划和周末目标进度。</p></div>
-          </div>
-
-          <div class="form-grid farm-settings-grid">
-            <div class="field">
-              <label for="plannerLevel">当前农场等级</label>
-              <div class="stepper-field">
-                <button class="mini-btn neutral" id="plannerLevelDown" type="button" aria-label="降低农场等级">−</button>
-                <input id="plannerLevel" class="input" type="number" min="1" step="1" inputmode="numeric" value="1" />
-                <button class="mini-btn neutral" id="plannerLevelUp" type="button" aria-label="提高农场等级">+</button>
-              </div>
-            </div>
-
-            <div class="field">
-              <label for="plannerLandCount">当前农田数量</label>
-              <input id="plannerLandCount" class="input" type="number" min="1" step="1" inputmode="numeric" value="100" />
-            </div>
-          </div>
-
-          <div class="small farm-settings-note">这里会自动保存；进入一键规划时会直接按这组设置计算。</div>
-        </section>
-
         <section class="panel start-panel">
           <div class="panel-head">
             <div class="panel-icon">➕</div>
@@ -191,29 +170,6 @@
             <div><h2>作物/动物性价比计算器</h2><p>按档案库数据比较作物收益、动物回本和经验效率。</p></div>
           </div>
           <a class="btn primary full-link" href="value-calculator.html">打开性价比计算器</a>
-        </section>
-
-        <section class="panel shortcut-panel data-transfer-panel">
-          <div class="panel-head">
-            <div class="panel-icon" style="background:#e0f2fe;color:#0369a1;">⇄</div>
-            <div><h2>云存档与本地备份</h2><p>登录后自动同步；未登录时仍保存在当前浏览器。</p></div>
-          </div>
-
-          <div id="cloudSyncMount" class="cloud-sync-mount"></div>
-
-          <div class="data-transfer-actions">
-            <button class="btn primary" id="dataExportBtn" type="button">导出全部数据</button>
-            <label class="btn ghost data-file-label" for="dataImportFile">选择备份文件</label>
-            <input id="dataImportFile" class="data-file-input" type="file" accept=".json,application/json" />
-          </div>
-
-          <label class="field data-transfer-field" for="dataImportText">
-            <span>备份内容</span>
-            <textarea id="dataImportText" class="input data-transfer-text" placeholder="导出的备份内容会显示在这里；也可以粘贴线上要导入的 JSON。"></textarea>
-          </label>
-
-          <button class="btn amber full-link" id="dataImportBtn" type="button">导入并刷新页面</button>
-          <div class="small data-transfer-note" id="dataTransferStatus">导入会覆盖当前浏览器中的种植、档案、牧场、规划、计算器和兴趣圈记录；浏览器提醒权限需要在新网址重新开启。云存档恢复前会自动保存一份本地恢复副本。</div>
         </section>
       </aside>
 

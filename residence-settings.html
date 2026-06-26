@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper · 居所设置</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body data-page="residence-settings">
+  <div class="app settings-page">
+    <header class="hero">
+      <div>
+        <div class="pill">🏡 居所设置</div>
+        <h1>居所设置</h1>
+        <p class="lead">居所等级和农田数量会影响作物档案匹配、一键规划和周末目标进度。</p>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="index.html">← 返回打卡</a>
+        <a class="btn ghost" href="planner.html">🧭 一键规划</a>
+        <a class="btn ghost" href="crop-archive.html">🗂️ 档案库</a>
+      </div>
+    </header>
+
+    <main class="page-layout">
+      <section class="panel farm-settings-panel residence-settings-panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">⚙️</div>
+          <div><h2>居所卡片</h2><p>这组设置会自动保存；进入一键规划时会直接按这里计算。</p></div>
+        </div>
+
+        <div class="form-grid farm-settings-grid residence-settings-grid">
+          <div class="field">
+            <label for="plannerLevel">当前居所等级</label>
+            <div class="stepper-field">
+              <button class="mini-btn neutral" id="plannerLevelDown" type="button" aria-label="降低居所等级">−</button>
+              <input id="plannerLevel" class="input" type="number" min="1" step="1" inputmode="numeric" value="1" />
+              <button class="mini-btn neutral" id="plannerLevelUp" type="button" aria-label="提高居所等级">+</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="plannerLandCount">当前农田数量</label>
+            <input id="plannerLandCount" class="input" type="number" min="1" step="1" inputmode="numeric" value="100" />
+          </div>
+        </div>
+
+        <div class="small farm-settings-note">修改后会同步给主页、牧场自动选档和一键规划。</div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-zone" id="toastZone"></div>
+
+  <script src="storage-keys.js"></script>
+  <script src="cloud-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="cloud-sync.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

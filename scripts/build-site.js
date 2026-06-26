@@ -5,6 +5,8 @@ const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
 const siteFiles = [
   "index.html",
+  "residence-settings.html",
+  "user-storage.html",
   "rules.html",
   "crop-archive.html",
   "value-calculator.html",

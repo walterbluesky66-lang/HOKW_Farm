@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper · 用户与存档管理</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body data-page="user-storage">
+  <div class="app storage-page">
+    <header class="hero">
+      <div>
+        <div class="pill">👤 用户与存档管理</div>
+        <h1>用户与存档管理</h1>
+        <p class="lead">登录后自动同步；未登录时仍保存在当前浏览器，也可以导出或导入本地备份。</p>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="index.html">← 返回打卡</a>
+        <a class="btn ghost" href="residence-settings.html">🏡 居所设置</a>
+      </div>
+    </header>
+
+    <main class="page-layout">
+      <section class="panel shortcut-panel data-transfer-panel storage-management-panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#e0f2fe;color:#0369a1;">⇄</div>
+          <div><h2>用户与存档管理</h2><p>种植、档案、牧场、规划、计算器和兴趣圈记录都在这里管理。</p></div>
+        </div>
+
+        <div id="cloudSyncMount" class="cloud-sync-mount"></div>
+
+        <div class="data-transfer-actions">
+          <button class="btn primary" id="dataExportBtn" type="button">导出全部数据</button>
+          <label class="btn ghost data-file-label" for="dataImportFile">选择备份文件</label>
+          <input id="dataImportFile" class="data-file-input" type="file" accept=".json,application/json" />
+        </div>
+
+        <label class="field data-transfer-field" for="dataImportText">
+          <span>备份内容</span>
+          <textarea id="dataImportText" class="input data-transfer-text" placeholder="导出的备份内容会显示在这里；也可以粘贴线上要导入的 JSON。"></textarea>
+        </label>
+
+        <button class="btn amber full-link" id="dataImportBtn" type="button">导入并刷新页面</button>
+        <div class="small data-transfer-note" id="dataTransferStatus">导入会覆盖当前浏览器中的种植、档案、牧场、规划、计算器和兴趣圈记录；浏览器提醒权限需要在新网址重新开启。云存档恢复前会自动保存一份本地恢复副本。</div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-zone" id="toastZone"></div>
+
+  <script src="storage-keys.js"></script>
+  <script src="cloud-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="cloud-sync.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

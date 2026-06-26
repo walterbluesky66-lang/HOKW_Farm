@@ -4,6 +4,7 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 const appJs = fs.readFileSync(path.join(root, "app.js"), "utf8");
 const indexHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
+const buildSiteJs = fs.readFileSync(path.join(root, "scripts", "build-site.js"), "utf8");
 
 function assert(condition, message) {
   if (!condition) {
@@ -71,6 +72,48 @@ const ranchShortcutPattern = /<section class="panel shortcut-panel">[\s\S]*?href
 assert(
   !ranchShortcutPattern.test(indexHtml),
   "Duplicate ranch management shortcut card should be removed from the sidebar"
+);
+
+assert(
+  indexHtml.includes('class="brand-row"') &&
+  indexHtml.includes('href="residence-settings.html"') &&
+  indexHtml.includes('href="user-storage.html"'),
+  "Home header should expose residence settings and user/storage management beside the Farm Helper pill"
+);
+
+assert(
+  !indexHtml.includes('class="panel farm-settings-panel"') &&
+  !indexHtml.includes('id="plannerLevel"') &&
+  !indexHtml.includes('id="cloudSyncMount"') &&
+  !indexHtml.includes('id="dataExportBtn"'),
+  "Home page should no longer render the large residence settings or user/storage panels"
+);
+
+const residenceHtml = fs.readFileSync(path.join(root, "residence-settings.html"), "utf8");
+assert(
+  residenceHtml.includes("<h1>居所设置</h1>") &&
+  residenceHtml.includes("当前居所等级") &&
+  residenceHtml.includes('id="plannerLevel"') &&
+  residenceHtml.includes('id="plannerLandCount"') &&
+  residenceHtml.includes('src="app.js"'),
+  "Residence settings should live on a secondary page using the existing planner inputs"
+);
+
+const userStorageHtml = fs.readFileSync(path.join(root, "user-storage.html"), "utf8");
+assert(
+  userStorageHtml.includes("<h1>用户与存档管理</h1>") &&
+  userStorageHtml.includes('id="cloudSyncMount"') &&
+  userStorageHtml.includes('id="dataExportBtn"') &&
+  userStorageHtml.includes('id="dataImportBtn"') &&
+  userStorageHtml.includes('src="cloud-sync.js"') &&
+  userStorageHtml.includes('src="app.js"'),
+  "User/storage management should live on a secondary page with cloud sync and backup controls"
+);
+
+assert(
+  buildSiteJs.includes('"residence-settings.html"') &&
+  buildSiteJs.includes('"user-storage.html"'),
+  "Build script should publish the new secondary pages"
 );
 
 console.log("Home interaction layout checks passed.");

@@ -776,7 +776,7 @@
       event.preventDefault();
       const values = readPlannerFormValues();
       if (!values) {
-        showToast("规划参数不对", "农场设置、目标数量和睡眠时间都需要填写有效值。", "warn");
+        showToast("规划参数不对", "居所设置、目标数量和睡眠时间都需要填写有效值。", "warn");
         return;
       }
 
@@ -2090,7 +2090,7 @@
       }
 
       if (exp === null || coins === null || farmLevel === null) {
-        showToast("输入有误", "经验、百工币和农场等级都需要填写为有效数字。", "warn");
+        showToast("输入有误", "经验、百工币和居所等级都需要填写为有效数字。", "warn");
         return;
       }
 
@@ -3083,7 +3083,7 @@
         els.valueResults.innerHTML = `
           <div class="value-empty">
             <strong>先从档案库加入作物</strong>
-            <span>工具会读取档案里的成熟时间、经验、百工币和农场等级，再换算每小时收益。</span>
+            <span>工具会读取档案里的成熟时间、经验、百工币和居所等级，再换算每小时收益。</span>
           </div>
         `;
         return;
@@ -3339,7 +3339,7 @@
           <section class="panel planner-panel">
             <div class="panel-head">
               <div class="panel-icon" style="background:#eef2ff;color:#4338ca;">🧭</div>
-              <div><h2>一键规划</h2><p>按主页面农场设置、周末目标和睡眠时间生成 7 天种植排期。</p></div>
+              <div><h2>一键规划</h2><p>按居所设置、周末目标和睡眠时间生成 7 天种植排期。</p></div>
             </div>
             <div class="value-empty">
               <strong>规划尚未开启</strong>
@@ -3347,7 +3347,7 @@
             </div>
           </section>
         `;
-        updatePlannerFormNote("规划关闭中。农场等级和农田数量请在主页面调整；本页设置目标和睡眠时间。");
+        updatePlannerFormNote("规划关闭中。居所等级和农田数量请在居所设置页调整；本页设置目标和睡眠时间。");
         return;
       }
 
@@ -4865,7 +4865,7 @@
       const countLabel = `${formatNumber(group.count)} 只`;
       const levelNote = info.levelLimited && info.animal
         ? `档案里没有 Lv.${formatNumber(info.currentLevel)} 可用的 ${meta.label}，暂按最高档案 Lv.${formatNumber(info.animal.farmLevel)} 显示。`
-        : `自动采用当前农场等级 Lv.${formatNumber(info.currentLevel)} 可用的最高等级 ${meta.label}。`;
+        : `自动采用当前居所等级 Lv.${formatNumber(info.currentLevel)} 可用的最高等级 ${meta.label}。`;
 
       if (!info.animal) {
         return `
