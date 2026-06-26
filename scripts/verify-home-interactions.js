@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const vm = require("vm");
 
 const root = path.resolve(__dirname, "..");
 const appJs = fs.readFileSync(path.join(root, "app.js"), "utf8");
@@ -13,6 +14,132 @@ function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
   }
+}
+
+function createFakeElement() {
+  return {
+    addEventListener() {},
+    append() {},
+    appendChild() {},
+    click() {},
+    closest() {
+      return null;
+    },
+    contains() {
+      return false;
+    },
+    focus() {},
+    insertAdjacentElement() {},
+    insertAdjacentHTML() {},
+    matches() {
+      return false;
+    },
+    querySelector() {
+      return null;
+    },
+    querySelectorAll() {
+      return [];
+    },
+    remove() {},
+    removeAttribute() {},
+    setAttribute() {},
+    checked: false,
+    classList: {
+      add() {},
+      contains() {
+        return false;
+      },
+      remove() {},
+      toggle() {}
+    },
+    className: "",
+    dataset: {},
+    disabled: false,
+    innerHTML: "",
+    options: [],
+    selectedIndex: 0,
+    selectedOptions: [],
+    style: {},
+    textContent: "",
+    value: ""
+  };
+}
+
+function loadAppForPlannerChecks() {
+  const documentMock = {
+    addEventListener() {},
+    body: {
+      append() {},
+      appendChild() {},
+      dataset: {}
+    },
+    createElement() {
+      return createFakeElement();
+    },
+    getElementById() {
+      return createFakeElement();
+    },
+    querySelector() {
+      return null;
+    },
+    querySelectorAll() {
+      return [];
+    }
+  };
+  const localStorageMock = {
+    getItem() {
+      return null;
+    },
+    removeItem() {},
+    setItem() {}
+  };
+  const windowMock = {
+    addEventListener() {},
+    clearInterval() {},
+    clearTimeout,
+    confirm() {
+      return true;
+    },
+    HOKW_STORAGE: null,
+    isSecureContext: true,
+    location: { href: "test://planner" },
+    setInterval() {
+      return 0;
+    },
+    setTimeout
+  };
+  const context = {
+    Array,
+    clearInterval() {},
+    clearTimeout,
+    console,
+    Date,
+    document: documentMock,
+    Intl,
+    isFinite,
+    JSON,
+    localStorage: localStorageMock,
+    Map,
+    Math,
+    Number,
+    Object,
+    parseFloat,
+    parseInt,
+    Set,
+    setInterval() {
+      return 0;
+    },
+    setTimeout,
+    String,
+    window: windowMock
+  };
+
+  windowMock.document = documentMock;
+  windowMock.localStorage = localStorageMock;
+  windowMock.window = windowMock;
+  vm.createContext(context);
+  vm.runInContext(appJs, context);
+  return context;
 }
 
 function between(source, start, end, label) {
@@ -256,6 +383,35 @@ assert(
 assert(
   !storageKeysJs.includes('wzry-world-farm-crop-archive-v1", label: "作物档案"'),
   "Portable/cloud storage keys should not include the old user crop archive key"
+);
+
+const plannerContext = loadAppForPlannerChecks();
+const plannerPlantAt = new Date(2026, 5, 26, 16, 45, 0, 0).getTime();
+const plannerCycle = plannerContext.getPlannerCropCycle(
+  { cropKey: "money20", coins: 1, exp: 0, name: "planner test crop" },
+  plannerPlantAt,
+  { sleepStartMinutes: 0, sleepEndMinutes: 8 * 60 }
+);
+const expectedSleepAwareMatureAt = new Date(2026, 5, 27, 7, 15, 0, 0).getTime();
+const expectedSleepAwareHarvestAt = new Date(2026, 5, 27, 8, 0, 0, 0).getTime();
+const sleepStartAt = new Date(2026, 5, 27, 0, 0, 0, 0).getTime();
+const latestEveningWater = plannerCycle.waterEvents.find(event =>
+  event.at > new Date(2026, 5, 26, 23, 30, 0, 0).getTime() &&
+  event.at < sleepStartAt &&
+  event.reduction > 0
+);
+
+assert(
+  plannerCycle.matureAt === expectedSleepAwareMatureAt,
+  "Planner should include the last available non-full self-watering before sleep when it advances maturity"
+);
+assert(
+  plannerCycle.harvestAt === expectedSleepAwareHarvestAt,
+  "Planner should still move a sleep-period maturity to the configured wake-up harvest time"
+);
+assert(
+  latestEveningWater,
+  "Planner should record the pre-sleep non-full self-watering event"
 );
 
 console.log("Home interaction and standard crop archive checks passed.");

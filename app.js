@@ -4034,6 +4034,55 @@
       };
     }
 
+    function getPlannerSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, waterAt, earliestAt) {
+      if (!Number.isFinite(waterAt) || !Number.isFinite(lastSelfWaterAt)) return null;
+      if (waterAt < earliestAt || waterAt <= lastSelfWaterAt || waterAt >= rawMatureAt) return null;
+
+      const rule = cropRule(cropKey);
+      const reduction = getSelfWaterReductionByElapsed(rule, waterAt - lastSelfWaterAt);
+      if (reduction <= 0) return null;
+
+      const nextRawMatureAt = Math.max(waterAt, rawMatureAt - reduction);
+      const matureAt = roundMatureTimestamp(cropKey, nextRawMatureAt);
+      const naturalMatureAt = roundMatureTimestamp(cropKey, rawMatureAt);
+      if (matureAt >= naturalMatureAt) return null;
+
+      return {
+        waterAt,
+        reduction,
+        rawMatureAt: nextRawMatureAt,
+        matureAt
+      };
+    }
+
+    function getPlannerFinalSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, settings, earliestAt) {
+      const finalOpportunity = getFinalSelfWaterOpportunity(cropKey, rawMatureAt, lastSelfWaterAt, earliestAt);
+      if (!finalOpportunity.finalWaterAt) return null;
+
+      const candidates = [];
+      const finalWaterAt = moveOutOfSleep(finalOpportunity.finalWaterAt, settings);
+      const finalCandidate = getPlannerSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, finalWaterAt, earliestAt);
+      if (finalCandidate) {
+        candidates.push({
+          ...finalCandidate,
+          delayedFrom: finalWaterAt !== finalOpportunity.finalWaterAt ? finalOpportunity.finalWaterAt : null,
+          label: "收尾自浇"
+        });
+      }
+
+      const latestAwakeAt = getLatestAwakeBeforeSleep(finalOpportunity.finalWaterAt, settings);
+      const preSleepCandidate = getPlannerSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, latestAwakeAt, earliestAt);
+      if (preSleepCandidate) {
+        candidates.push({
+          ...preSleepCandidate,
+          delayedFrom: null,
+          label: "睡前自浇"
+        });
+      }
+
+      return candidates.sort((a, b) => a.matureAt - b.matureAt || b.waterAt - a.waterAt)[0] || null;
+    }
+
     function getPlannerCropCycle(item, startAt, settings) {
       const cropKey = item.cropKey;
       const rule = cropRule(cropKey);
@@ -4065,8 +4114,19 @@
         lastSelfWaterAt = fullWaterAt;
       }
 
+      const finalCandidate = getPlannerFinalSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, settings, plantAt);
+      if (finalCandidate) {
+        rawMatureAt = finalCandidate.rawMatureAt;
+        waterEvents.push({
+          at: finalCandidate.waterAt,
+          label: finalCandidate.label,
+          reduction: finalCandidate.reduction,
+          delayedFrom: finalCandidate.delayedFrom
+        });
+      }
+
       const finalOpportunity = getFinalSelfWaterOpportunity(cropKey, rawMatureAt, lastSelfWaterAt, plantAt);
-      if (finalOpportunity.finalWaterAt) {
+      if (!finalCandidate && finalOpportunity.finalWaterAt) {
         const finalWaterAt = moveOutOfSleep(finalOpportunity.finalWaterAt, settings);
         if (finalWaterAt < rawMatureAt) {
           const reduction = getSelfWaterReductionByElapsed(rule, finalWaterAt - lastSelfWaterAt);
@@ -4173,8 +4233,19 @@
         lastSelfWaterAt = fullWaterAt;
       }
 
+      const finalCandidate = getPlannerFinalSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, settings, actionStart);
+      if (finalCandidate) {
+        rawMatureAt = finalCandidate.rawMatureAt;
+        waterEvents.push({
+          at: finalCandidate.waterAt,
+          label: finalCandidate.label,
+          reduction: finalCandidate.reduction,
+          delayedFrom: finalCandidate.delayedFrom
+        });
+      }
+
       const finalOpportunity = getFinalSelfWaterOpportunity(cropKey, rawMatureAt, lastSelfWaterAt, actionStart);
-      if (finalOpportunity.finalWaterAt) {
+      if (!finalCandidate && finalOpportunity.finalWaterAt) {
         const finalWaterAt = moveOutOfSleep(finalOpportunity.finalWaterAt, settings);
         if (finalWaterAt < rawMatureAt) {
           const reduction = getSelfWaterReductionByElapsed(rule, finalWaterAt - lastSelfWaterAt);
@@ -5271,6 +5342,24 @@
         date.setDate(date.getDate() + 1);
       }
       return date.getTime();
+    }
+
+    function getLatestAwakeBeforeSleep(timestamp, settings) {
+      if (!isInSleep(timestamp, settings)) return null;
+
+      const date = new Date(timestamp);
+      const start = settings.sleepStartMinutes;
+      const startHours = Math.floor(start / 60);
+      const startMinutes = start % 60;
+      const minutes = getDayMinutes(timestamp);
+      const sleepOvernight = settings.sleepStartMinutes > settings.sleepEndMinutes;
+
+      if (sleepOvernight && minutes < settings.sleepEndMinutes) {
+        date.setDate(date.getDate() - 1);
+      }
+
+      date.setHours(startHours, startMinutes, 0, 0);
+      return date.getTime() - MINUTE;
     }
 
     function getLocalDayStart(timestamp) {
