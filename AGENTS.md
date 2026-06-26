@@ -35,11 +35,12 @@
 - `favicon.svg`：站点图标，避免线上浏览器请求默认图标时产生 404。
 - `storage-keys.js`：统一维护可导出、可导入、可云同步的本地数据键。
 - `cloud-config.js`：本地空配置占位；构建到 `dist/` 时由 `scripts/build-site.js` 根据 Cloudflare 环境变量生成线上配置。
-- `cloud-sync.js`：Supabase 邮箱验证码登录、云端快照恢复和自动上传逻辑。
+- `cloud-sync.js`：Supabase 邮箱验证码登录、云端快照恢复、恢复刷新防循环和自动上传逻辑。
 - `app.js`：作物配置、动物档案、浇水规则、进度计算、牧场批次、提醒、一键规划和本地存储逻辑。
 - `interest-circle.js`：兴趣圈独立脚本，使用 `wzry-world-interest-circle-v1` 本地状态，不依赖 `app.js`。
-- `package.json`：提供 `npm run build` 发布脚本。
+- `package.json`：提供 `npm run build` 发布脚本和回归验证脚本。
 - `scripts/build-site.js`：生成 Cloudflare Pages 发布目录 `dist/`，只复制网站运行必需文件。
+- `scripts/verify-cloud-sync-reload-guard.js`：模拟云端旧快照恢复后的本地迁移场景，验证不会反复自动刷新。
 - `supabase/user_snapshots.sql`：Supabase 私有云存档表、RLS 策略和更新时间触发器。
 - `.gitignore`：忽略 `dist/`、`node_modules/` 和临时发布 ZIP。
 - `README.md`：项目规则和启动方式。
@@ -123,7 +124,7 @@
 - 兴趣圈经验记录页：默认内置 Excel 中 8 组 TAG，并把 `2026-06-20` 作为“前一天经验”、`2026-06-21` 作为“今天经验”初始历史记录；页面打开自动选中当天，可用上一天、下一天和日历查看/修改历史。
 - 兴趣圈录入的是每组 TAG 的累计经验；今日新增按当前日期累计值减去最近一个历史记录日累计值计算，离满额差值按 `今日新增 - 206` 显示，8200 达标剩余天数按每天满额 `206` 推算；比较基准按相对日期显示，如“昨日 · 617”；分类支持新增，已有分类在各自卡片内单独编辑分类名称和 TAG；已有分类不删除，只能删除分类下的单个 TAG，并可复制 TAG 文本。
 - “用户与存档管理”二级页面可把种植打卡、动物档案、作物/动物收益对比、牧场批次、一键规划和兴趣圈记录导出为 JSON，也可从备份 JSON 导入到当前浏览器；作物档案不再作为用户数据导出、导入或云同步，浏览器通知权限和已提醒标记不迁移。
-- 云存档第一版：所有页面加载 `storage-keys.js`、`cloud-config.js` 和 `cloud-sync.js`；未配置 Supabase 或未登录时保持本地模式；登录后读取 Supabase `user_snapshots` 的 `primary` 快照，云端有数据则覆盖本地并刷新，云端为空且本地有数据则初始化云端；登录状态下可迁移 localStorage key 变化会自动防抖上传完整 JSON 快照。
+- 云存档第一版：所有页面加载 `storage-keys.js`、`cloud-config.js` 和 `cloud-sync.js`；未配置 Supabase 或未登录时保持本地模式；登录后读取 Supabase `user_snapshots` 的 `primary` 快照，云端有数据则首次覆盖本地并刷新；若刷新后本地脚本把旧快照迁移为新结构，会上传规范化后的本地快照而不是反复刷新；云端为空且本地有数据则初始化云端；登录状态下可迁移 localStorage key 变化会自动防抖上传完整 JSON 快照。
 - 支持 `npm run build` 生成 `dist/` 静态发布目录，当前复制 `index.html`、所有二/三级页面、`style.css`、`storage-keys.js`、`cloud-sync.js`、`app.js`、`interest-circle.js` 和 `favicon.svg`，并按环境变量生成 `dist/cloud-config.js`；`AGENTS.md`、`README.md`、`TODO.md`、`supabase/`、Excel 和原始参考 HTML 不进入发布目录。
 
 ## 本地验证方式
@@ -136,7 +137,9 @@ node --check E:\HOKW_Farm\interest-circle.js
 node --check E:\HOKW_Farm\storage-keys.js
 node --check E:\HOKW_Farm\cloud-sync.js
 node --check E:\HOKW_Farm\scripts\build-site.js
+node --check E:\HOKW_Farm\scripts\verify-cloud-sync-reload-guard.js
 npm run verify:home-interactions
+npm run verify:cloud-sync
 npm run build
 ```
 
@@ -225,6 +228,12 @@ npm run build
 - 其他 Codex 对话也可以直接更新本文件，但不要删除旧日志，除非用户明确要求整理。
 
 ## 交接日志
+
+### 2026-06-26 - 修复云存档反复自动刷新
+
+- 改动：`cloud-sync.js` 新增云端快照恢复标记和快照指纹校验；同一份云端快照首次恢复后仍会刷新一次以重载页面，但如果刷新后本地脚本把旧快照迁移/规范化为新结构，会改为上传规范化后的本地快照并清除恢复标记，不再重复恢复和刷新；退出登录、云端一致、云端为空和上传成功时会清理临时恢复标记；新增 `scripts/verify-cloud-sync-reload-guard.js` 和 `npm run verify:cloud-sync` 回归脚本；`README.md`、`AGENTS.md` 和 `package.json` 已同步。
+- 验证：已先运行 `node scripts\verify-cloud-sync-reload-guard.js` 观察到新增回归检查按预期失败；完成修改后已运行 `node --check E:\HOKW_Farm\app.js`、`node --check E:\HOKW_Farm\interest-circle.js`、`node --check E:\HOKW_Farm\storage-keys.js`、`node --check E:\HOKW_Farm\cloud-sync.js`、`node --check E:\HOKW_Farm\scripts\build-site.js`、`node --check E:\HOKW_Farm\scripts\verify-cloud-sync-reload-guard.js`、`npm run verify:cloud-sync`、`npm run verify:home-interactions` 和 `npm run build`；已确认 `dist/` 只包含发布必需文件，`dist/cloud-config.js` 在本地未配置环境变量时 `syncEnabled` 为 `false`，且未发现 service role、secret、数据库密码或交接文档进入 `dist/`。
+- 后续注意：本次用脚本模拟“云端旧快照恢复后被本地脚本迁移”的刷新循环，没有使用真实 Supabase 项目在线登录验证；线上部署后如果用户已经卡在刷新循环，第一次加载可能仍会刷新一次，随后应停止循环并把规范化后的快照同步回云端。
 
 ### 2026-06-26 - 固化只读标准作物库
 

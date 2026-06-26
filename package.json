@@ -1,7 +1,8 @@
 {
   "scripts": {
     "build": "node scripts/build-site.js",
-    "verify:home-interactions": "node scripts/verify-home-interactions.js"
+    "verify:home-interactions": "node scripts/verify-home-interactions.js",
+    "verify:cloud-sync": "node scripts/verify-cloud-sync-reload-guard.js"
   },
   "devDependencies": {}
 }

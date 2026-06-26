@@ -5,7 +5,7 @@
 ## 当前形态
 
 - 静态网页，直接在浏览器中运行；Cloudflare Pages 发布时仍只发布 `dist/`。
-- 作物标准库固化在 `app.js` 随网站发布；其余用户数据默认保存在 `localStorage`，配置 Supabase 后可用邮箱验证码登录并自动同步私有云存档。
+- 作物标准库固化在 `app.js` 随网站发布；其余用户数据默认保存在 `localStorage`，配置 Supabase 后可用邮箱验证码登录并自动同步私有云存档，云端旧快照迁移不会触发反复自动刷新。
 - 当前管理对象是一整块菜地的一批作物，不是多块独立菜地。
 - 牧场按栏位总数管理动物数量，用户只填写 16 小时动物和 20 小时动物各多少只，并按两组批次计时。
 - 暂不管理药物作物，也不把药物作物混入经验或百工币收益计算。
@@ -35,11 +35,12 @@
 - `favicon.svg`：站点图标，避免线上浏览器请求默认图标时产生 404。
 - `storage-keys.js`：统一维护可导出、可导入、可云同步的本地数据键。
 - `cloud-config.js`：本地空配置占位；构建到 `dist/` 时会按 Cloudflare 环境变量生成线上配置。
-- `cloud-sync.js`：Supabase 邮箱验证码登录、云端快照恢复和自动上传逻辑。
+- `cloud-sync.js`：Supabase 邮箱验证码登录、云端快照恢复、恢复刷新防循环和自动上传逻辑。
 - `app.js`：作物配置、动物档案、浇水规则、进度计算、牧场批次、提醒、一键规划和本地存储逻辑。
 - `interest-circle.js`：兴趣圈独立脚本，使用单独 `localStorage` 数据，不接入 `app.js`。
-- `package.json`：提供 `npm run build` 发布脚本。
+- `package.json`：提供 `npm run build` 发布脚本和回归验证脚本。
 - `scripts/build-site.js`：生成 Cloudflare Pages 发布目录 `dist/`，只复制网站运行必需文件。
+- `scripts/verify-cloud-sync-reload-guard.js`：模拟云端旧快照恢复后的本地迁移场景，验证不会反复自动刷新。
 - `supabase/user_snapshots.sql`：Supabase 私有云存档表、RLS 策略和更新时间触发器。
 - `wzry_world_farm_helper_progress_audio (1).html`：原始单文件版本，保留作参考。
 - `TODO.md`：后续开发计划。

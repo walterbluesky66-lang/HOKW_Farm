@@ -1,8 +1,10 @@
 (function () {
   const META_KEY = "wzry-world-farm-cloud-sync-meta-v1";
   const RECOVERY_KEY = "wzry-world-farm-cloud-recovery-v1";
+  const RESTORE_MARKER_KEY = "wzry-world-farm-cloud-restore-marker-v1";
   const SLOT_KEY = "primary";
   const AUTO_UPLOAD_DELAY = 2200;
+  const RESTORE_MARKER_TTL = 5 * 60 * 1000;
   const CONFIG = window.HOKW_CLOUD_CONFIG || {};
   const storage = window.HOKW_STORAGE;
   const portableKeySet = new Set((storage?.portableKeys || []).map(item => item.key));
@@ -256,6 +258,7 @@
       state.session = null;
       state.initialized = false;
       originalRemoveItem.call(localStorage, META_KEY);
+      clearRestoreMarker();
       setStatus("已退出云存档", "本地数据仍保留在当前浏览器。");
       renderStatus();
     } catch (error) {
@@ -315,8 +318,17 @@
       });
 
       if (storage.samePortableData(data.payload)) {
+        clearRestoreMarker();
         state.initialized = true;
         setStatus("云存档已同步", "云端和本地数据一致。");
+        return;
+      }
+
+      if (restoreMarkerMatchesSnapshot(readRestoreMarker(), data, user)) {
+        state.initialized = true;
+        setStatus("云存档已完成本地迁移", "正在把本地规范化后的存档同步到云端，避免重复刷新。");
+        await uploadSnapshot("normalized");
+        clearRestoreMarker();
         return;
       }
 
@@ -327,11 +339,13 @@
       } finally {
         state.applyingRemote = false;
       }
+      saveRestoreMarker(data, user);
       setStatus("已恢复云端存档", "页面即将刷新。");
       setTimeout(() => window.location.reload(), 700);
       return;
     }
 
+    clearRestoreMarker();
     state.initialized = true;
     if (storage.hasPortableData()) {
       await uploadSnapshot("initial");
@@ -381,6 +395,7 @@
       lastPushedAt: new Date().toISOString(),
       serverUpdatedAt: state.lastSyncedAt
     });
+    clearRestoreMarker();
     setStatus("云存档已同步", formatSyncDetail(reason));
   }
 
@@ -392,6 +407,65 @@
       payload: storage.buildPortableData(window.location.href)
     };
     originalSetItem.call(localStorage, RECOVERY_KEY, JSON.stringify(backup));
+  }
+
+  function saveRestoreMarker(data, user) {
+    const marker = {
+      userId: user?.id || "",
+      slotKey: SLOT_KEY,
+      revision: data?.revision || null,
+      serverUpdatedAt: data?.server_updated_at || "",
+      fingerprint: getSnapshotFingerprint(data?.payload),
+      createdAt: Date.now()
+    };
+    originalSetItem.call(localStorage, RESTORE_MARKER_KEY, JSON.stringify(marker));
+  }
+
+  function readRestoreMarker() {
+    try {
+      const marker = JSON.parse(localStorage.getItem(RESTORE_MARKER_KEY) || "null");
+      if (!marker || typeof marker !== "object") return null;
+      const createdAt = Number(marker.createdAt);
+      if (!Number.isFinite(createdAt) || Date.now() - createdAt > RESTORE_MARKER_TTL) {
+        clearRestoreMarker();
+        return null;
+      }
+      return marker;
+    } catch (err) {
+      clearRestoreMarker();
+      return null;
+    }
+  }
+
+  function clearRestoreMarker() {
+    originalRemoveItem.call(localStorage, RESTORE_MARKER_KEY);
+  }
+
+  function restoreMarkerMatchesSnapshot(marker, data, user) {
+    if (!marker) return false;
+    if (marker.userId !== (user?.id || "")) return false;
+    if (marker.slotKey !== SLOT_KEY) return false;
+    if ((marker.revision || null) !== (data?.revision || null)) return false;
+    if ((marker.serverUpdatedAt || "") !== (data?.server_updated_at || "")) return false;
+    return marker.fingerprint === getSnapshotFingerprint(data?.payload);
+  }
+
+  function getSnapshotFingerprint(payload) {
+    const remoteStorage = payload?.storage && typeof payload.storage === "object" ? payload.storage : {};
+    const keys = storage?.portableKeys?.length
+      ? storage.portableKeys.map(item => item.key)
+      : Object.keys(remoteStorage).sort();
+    const source = keys.map(key => {
+      if (!Object.prototype.hasOwnProperty.call(remoteStorage, key)) return `${key}:missing`;
+      const value = typeof remoteStorage[key] === "string" ? remoteStorage[key] : JSON.stringify(remoteStorage[key]);
+      return `${key}:${value.length}:${value}`;
+    }).join("\n");
+
+    let hash = 5381;
+    for (let index = 0; index < source.length; index += 1) {
+      hash = ((hash << 5) + hash + source.charCodeAt(index)) >>> 0;
+    }
+    return `${source.length}:${hash.toString(36)}`;
   }
 
   function getEmailInput() {
