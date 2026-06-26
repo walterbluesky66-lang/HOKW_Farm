@@ -4754,6 +4754,15 @@
       const stallMultiplier = getAnimalStallMultiplier();
       const activeCount = getRanchActiveCount();
       const readyAnimalCount = getRanchReadyAnimalCount(infos);
+      const harvestActionInfos = activeInfos.filter(info => info.animal);
+      const ranchHomeActions = [
+        ...harvestActionInfos.map(info => `
+          <button class="btn ${info.ready ? "green" : "ghost"} ranch-home-harvest-btn" type="button" data-ranch-home-harvest-group="${escapeHtml(info.meta.key)}">
+            ${info.ready ? "✅" : "🐮"} 收${escapeHtml(info.meta.shortLabel)}
+          </button>
+        `),
+        `<a class="btn ghost ranch-home-settings-link" href="ranch.html">设置牧场</a>`
+      ].join("");
 
       els.ranchHomeArea.innerHTML = `
         <section class="panel ranch-home-panel">
@@ -4762,6 +4771,9 @@
             <div>
               <h2>牧场提醒</h2>
               <p>${activeCount ? `当前 ${formatNumber(activeCount)} / ${formatNumber(ranchState.slotCount)} 只动物在养殖，动物摊 Lv.${formatNumber(ranchState.stallLevel)}，售价倍率 ${formatNumber(stallMultiplier)}。` : "填写 16 小时和 20 小时动物数量后，主页会显示最近需要收获的动物。"}</p>
+            </div>
+            <div class="ranch-home-top-actions">
+              ${ranchHomeActions}
             </div>
           </div>
 
@@ -4798,12 +4810,17 @@
             </div>
           `}
 
-          <div class="planner-next-actions ranch-home-actions">
-            <a class="btn primary" href="ranch.html">打开牧场管理</a>
-            <a class="btn ghost" href="crop-archive.html">维护动物档案</a>
-          </div>
+          ${activeCount ? "" : `
+            <div class="planner-next-actions ranch-home-actions">
+              <a class="btn ghost" href="crop-archive.html">维护动物档案</a>
+            </div>
+          `}
         </section>
       `;
+
+      els.ranchHomeArea.querySelectorAll("[data-ranch-home-harvest-group]").forEach(button => {
+        button.addEventListener("click", () => harvestRanchGroup(button.dataset.ranchHomeHarvestGroup));
+      });
     }
 
     function renderRanchPage() {
@@ -5376,7 +5393,7 @@
           <div class="farm-gradient ${crop.gradient}"></div>
           <div class="farm-body">
             <div class="farm-title-row">
-              <div>
+              <div class="farm-title-main">
                 <div class="badge-row">
                   <span class="badge dark">整块菜地</span>
                   <span class="badge">${crop.icon} ${crop.short}</span>
@@ -5389,7 +5406,15 @@
                 <h2 class="farm-name">${escapeHtml(displayName)}</h2>
                 <p class="farm-desc">${farm.planner ? `${escapeHtml(crop.label)} · ${farm.planner.goal === "coins" ? "20小时周末目标" : "经验优先排期"} · ${escapeHtml(archiveDesc)}` : `${escapeHtml(crop.label)} · ${escapeHtml(archiveDesc)}`}</p>
               </div>
-              <button class="btn rose" data-action="delete">🗑 删除记录</button>
+              <div class="farm-title-tools">
+                <div class="farm-actions farm-actions-top">
+                  <button class="btn primary" data-action="selfWater" ${matured || !waterHint.ready ? "disabled" : ""}>💧 我浇水了</button>
+                  <button class="btn green" data-action="friendWater" ${matured || farm.friendWaterCount >= 4 ? "disabled" : ""}>🤝 好友浇水 +1</button>
+                  <button class="btn blue" data-action="sunbin" ${matured || farm.sunbinUsed ? "disabled" : ""}>⏩ 孙膑催熟</button>
+                  <button class="btn amber" data-action="harvest" ${!matured ? "disabled" : ""}>✅ 收获完成</button>
+                </div>
+                <button class="btn rose farm-delete-action" data-action="delete">🗑 删除记录</button>
+              </div>
             </div>
 
             <div class="metric-grid">
@@ -5429,13 +5454,6 @@
               <div class="progress-top"><span>有效成长进度</span><span>${progress.toFixed(1)}%</span></div>
               <div class="progress"><div class="progress-bar" style="width:${progress}%;"></div></div>
               <div class="progress-note">${progressNote}。</div>
-            </div>
-
-            <div class="farm-actions">
-              <button class="btn primary" data-action="selfWater" ${matured || !waterHint.ready ? "disabled" : ""}>💧 我浇水了</button>
-              <button class="btn green" data-action="friendWater" ${matured || farm.friendWaterCount >= 4 ? "disabled" : ""}>🤝 好友浇水 +1</button>
-              <button class="btn blue" data-action="sunbin" ${matured || farm.sunbinUsed ? "disabled" : ""}>⏩ 孙膑催熟</button>
-              <button class="btn amber" data-action="harvest" ${!matured ? "disabled" : ""}>✅ 收获完成</button>
             </div>
 
             <div class="notice ${matured ? "good" : ""}">

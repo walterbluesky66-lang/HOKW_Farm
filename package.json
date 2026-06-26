@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build": "node scripts/build-site.js"
+    "build": "node scripts/build-site.js",
+    "verify:home-interactions": "node scripts/verify-home-interactions.js"
   },
   "devDependencies": {}
 }
