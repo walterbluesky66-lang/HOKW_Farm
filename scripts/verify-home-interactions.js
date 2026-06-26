@@ -414,6 +414,36 @@ assert(
   "Planner should record the pre-sleep non-full self-watering event"
 );
 
+const currentNow = new Date(2026, 5, 26, 17, 31, 0, 0).getTime();
+const currentPlantAt = new Date(2026, 5, 26, 16, 0, 0, 0).getTime();
+const currentRawMatureAt = new Date(2026, 5, 27, 9, 45, 0, 0).getTime();
+const currentPlannerCycle = plannerContext.getCurrentFarmPlannerCycle(
+  {
+    cropKey: "money20",
+    plantedAt: currentPlantAt,
+    totalReductionMs: currentPlantAt + 20 * 60 * 60 * 1000 - currentRawMatureAt,
+    lastSelfWaterAt: new Date(2026, 5, 26, 16, 56, 0, 0).getTime(),
+    friendWaterCount: 4
+  },
+  currentNow,
+  { sleepStartMinutes: 0, sleepEndMinutes: 8 * 60 }
+);
+const currentPreSleepWater = currentPlannerCycle.waterEvents.find(event =>
+  event.label.includes("睡前") &&
+  event.at > new Date(2026, 5, 26, 23, 30, 0, 0).getTime() &&
+  event.at < sleepStartAt
+);
+
+assert(
+  currentPreSleepWater,
+  "Current-crop planner should consider a pre-sleep partial watering before delaying the next full watering to wake-up"
+);
+assert(
+  currentPlannerCycle.matureAt < currentPlannerCycle.harvestAt &&
+    currentPlannerCycle.harvestAt === expectedSleepAwareHarvestAt,
+  "Current-crop planner should expose a sleep gap when pre-sleep partial watering makes the crop mature before wake-up"
+);
+
 const plannerDisplayRecord = {
   archiveId: "planner-test",
   coinGain: 0,

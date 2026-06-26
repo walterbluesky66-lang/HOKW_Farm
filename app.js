@@ -4055,22 +4055,19 @@
       };
     }
 
-    function getPlannerFinalSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, settings, earliestAt) {
-      const finalOpportunity = getFinalSelfWaterOpportunity(cropKey, rawMatureAt, lastSelfWaterAt, earliestAt);
-      if (!finalOpportunity.finalWaterAt) return null;
-
+    function getPlannerScheduledSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, targetWaterAt, settings, earliestAt, label = "自浇", delayedFromAt = targetWaterAt) {
       const candidates = [];
-      const finalWaterAt = moveOutOfSleep(finalOpportunity.finalWaterAt, settings);
-      const finalCandidate = getPlannerSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, finalWaterAt, earliestAt);
-      if (finalCandidate) {
+      const scheduledWaterAt = moveOutOfSleep(targetWaterAt, settings);
+      const scheduledCandidate = getPlannerSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, scheduledWaterAt, earliestAt);
+      if (scheduledCandidate) {
         candidates.push({
-          ...finalCandidate,
-          delayedFrom: finalWaterAt !== finalOpportunity.finalWaterAt ? finalOpportunity.finalWaterAt : null,
-          label: "收尾自浇"
+          ...scheduledCandidate,
+          delayedFrom: scheduledWaterAt !== delayedFromAt ? delayedFromAt : null,
+          label
         });
       }
 
-      const latestAwakeAt = getLatestAwakeBeforeSleep(finalOpportunity.finalWaterAt, settings);
+      const latestAwakeAt = getLatestAwakeBeforeSleep(targetWaterAt, settings);
       const preSleepCandidate = getPlannerSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, latestAwakeAt, earliestAt);
       if (preSleepCandidate) {
         candidates.push({
@@ -4081,6 +4078,21 @@
       }
 
       return candidates.sort((a, b) => a.matureAt - b.matureAt || b.waterAt - a.waterAt)[0] || null;
+    }
+
+    function getPlannerFinalSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, settings, earliestAt) {
+      const finalOpportunity = getFinalSelfWaterOpportunity(cropKey, rawMatureAt, lastSelfWaterAt, earliestAt);
+      if (!finalOpportunity.finalWaterAt) return null;
+
+      return getPlannerScheduledSelfWaterCandidate(
+        cropKey,
+        rawMatureAt,
+        lastSelfWaterAt,
+        finalOpportunity.finalWaterAt,
+        settings,
+        earliestAt,
+        "收尾自浇"
+      );
     }
 
     function getPlannerCropCycle(item, startAt, settings) {
@@ -4097,21 +4109,27 @@
 
       for (let i = 0; i < 24; i += 1) {
         const targetFullWaterAt = lastSelfWaterAt + rule.maxInterval;
-        const fullWaterAt = moveOutOfSleep(targetFullWaterAt, settings);
         const currentMatureAt = roundMatureTimestamp(cropKey, rawMatureAt);
         const currentHarvestAt = moveOutOfSleep(currentMatureAt, settings);
+        const fullWaterCandidate = getPlannerScheduledSelfWaterCandidate(
+          cropKey,
+          rawMatureAt,
+          lastSelfWaterAt,
+          targetFullWaterAt,
+          settings,
+          plantAt
+        );
 
-        if (fullWaterAt >= rawMatureAt || fullWaterAt >= currentHarvestAt) break;
+        if (!fullWaterCandidate || fullWaterCandidate.waterAt >= currentHarvestAt) break;
 
-        const reduction = getSelfWaterReductionByElapsed(rule, fullWaterAt - lastSelfWaterAt);
-        rawMatureAt = Math.max(fullWaterAt, rawMatureAt - reduction);
+        rawMatureAt = fullWaterCandidate.rawMatureAt;
         waterEvents.push({
-          at: fullWaterAt,
-          label: "自浇",
-          reduction,
-          delayedFrom: fullWaterAt !== targetFullWaterAt ? targetFullWaterAt : null
+          at: fullWaterCandidate.waterAt,
+          label: fullWaterCandidate.label,
+          reduction: fullWaterCandidate.reduction,
+          delayedFrom: fullWaterCandidate.delayedFrom
         });
-        lastSelfWaterAt = fullWaterAt;
+        lastSelfWaterAt = fullWaterCandidate.waterAt;
       }
 
       const finalCandidate = getPlannerFinalSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, settings, plantAt);
@@ -4216,21 +4234,30 @@
 
       for (let i = 0; i < 24; i += 1) {
         const targetFullWaterAt = lastSelfWaterAt + rule.maxInterval;
-        const fullWaterAt = moveOutOfSleep(Math.max(targetFullWaterAt, actionStart), settings);
         const currentMatureAt = roundMatureTimestamp(cropKey, rawMatureAt);
         const currentHarvestAt = moveOutOfSleep(Math.max(actionStart, currentMatureAt), settings);
+        const targetWaterAt = Math.max(targetFullWaterAt, actionStart);
+        const fullWaterCandidate = getPlannerScheduledSelfWaterCandidate(
+          cropKey,
+          rawMatureAt,
+          lastSelfWaterAt,
+          targetWaterAt,
+          settings,
+          actionStart,
+          "自浇",
+          targetFullWaterAt
+        );
 
-        if (fullWaterAt >= rawMatureAt || fullWaterAt >= currentHarvestAt) break;
+        if (!fullWaterCandidate || fullWaterCandidate.waterAt >= currentHarvestAt) break;
 
-        const reduction = getSelfWaterReductionByElapsed(rule, fullWaterAt - lastSelfWaterAt);
-        rawMatureAt = Math.max(fullWaterAt, rawMatureAt - reduction);
+        rawMatureAt = fullWaterCandidate.rawMatureAt;
         waterEvents.push({
-          at: fullWaterAt,
-          label: "自浇",
-          reduction,
-          delayedFrom: fullWaterAt !== targetFullWaterAt ? targetFullWaterAt : null
+          at: fullWaterCandidate.waterAt,
+          label: fullWaterCandidate.label,
+          reduction: fullWaterCandidate.reduction,
+          delayedFrom: fullWaterCandidate.delayedFrom
         });
-        lastSelfWaterAt = fullWaterAt;
+        lastSelfWaterAt = fullWaterCandidate.waterAt;
       }
 
       const finalCandidate = getPlannerFinalSelfWaterCandidate(cropKey, rawMatureAt, lastSelfWaterAt, settings, actionStart);
