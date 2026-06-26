@@ -30,6 +30,66 @@ const farmHeader = between(
   "farm card header"
 );
 
+const homeStats = between(
+  indexHtml,
+  '<section class="grid-stats">',
+  '<main class="main">',
+  "home stats cards"
+);
+
+assert(
+  homeStats.includes("距离最大间隔") &&
+  !homeStats.includes("下次自浇"),
+  "Home top stat should guide users to the max-interval/final-watering target instead of next self-watering"
+);
+
+const farmMetricGrid = between(
+  appJs,
+  '<div class="metric-grid">',
+  '<div class="progress-wrap">',
+  "farm metric grid"
+);
+
+assert(
+  farmMetricGrid.includes("剩余成熟") &&
+  farmMetricGrid.includes("理论最短") &&
+  farmMetricGrid.indexOf("理论最短") < farmMetricGrid.indexOf("💧"),
+  "Remaining maturity card should include theoretical shortest maturity before the watering guidance card"
+);
+
+assert(
+  farmMetricGrid.includes("距离最大间隔") &&
+  !farmMetricGrid.includes("下次自浇") &&
+  farmMetricGrid.includes("最佳收尾早于最大间隔"),
+  "Farm metric grid should replace the next self-watering card with max-interval/final-watering guidance"
+);
+
+const waterReminderTarget = between(
+  appJs,
+  "function getWaterReminderTarget",
+  "function getCurrentTheoreticalPlan",
+  "water reminder target helper"
+);
+
+assert(
+  waterReminderTarget.includes("finalAt && finalAt <= maxAt") &&
+  waterReminderTarget.includes('type = shouldUseFinal ? "final"'),
+  "Water reminder target should prefer best final watering when it is earlier than the max interval"
+);
+
+const reminderBlock = between(
+  appJs,
+  "function checkDueReminders()",
+  "function showReminder(",
+  "reminder scheduler"
+);
+
+assert(
+  reminderBlock.includes("getWaterReminderTarget") &&
+  !reminderBlock.includes("const nextWaterAt = getNextWaterAt(farm);"),
+  "Farm reminders should target max interval or best final watering, not the earliest next self-watering"
+);
+
 ["selfWater", "friendWater", "sunbin", "harvest"].forEach(action => {
   assert(
     farmHeader.includes(`data-action="${action}"`),

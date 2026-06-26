@@ -1627,6 +1627,68 @@
       return { ready: true, done: false, label: `本次约减 ${formatDuration(reduction, true)}（${pct.toFixed(2)}%）`, maxLabel, waitMs: 0, maxWaitMs, reduction, nextAt, maxAt };
     }
 
+    function getWaterReminderTarget(farm, now = Date.now(), theoreticalPlan = null) {
+      const matureAt = getMatureAt(farm);
+      if (now >= matureAt) {
+        return {
+          type: "done",
+          at: null,
+          ready: false,
+          waitMs: 0,
+          value: "—",
+          sub: "作物已成熟",
+          label: "作物已成熟"
+        };
+      }
+
+      const rule = cropRule(farm.cropKey);
+      const nextAt = getNextWaterAt(farm);
+      const maxAt = farm.lastSelfWaterAt ? farm.lastSelfWaterAt + rule.maxInterval : nextAt;
+      const plan = theoreticalPlan || getCurrentTheoreticalPlan(farm, now);
+      const finalAt = plan.finalWaterAt && plan.finalWaterAt < matureAt ? plan.finalWaterAt : null;
+      const shouldUseFinal = finalAt && finalAt <= maxAt;
+      const targetAt = shouldUseFinal ? finalAt : maxAt;
+      const waitMs = Math.max(0, targetAt - now);
+      const ready = now >= targetAt;
+      const targetReduction = getSelfWaterReduction(farm, Math.max(targetAt, now));
+      const isFirstWater = !farm.lastSelfWaterAt && !shouldUseFinal;
+      const type = shouldUseFinal ? "final" : isFirstWater ? "first" : "max";
+
+      if (type === "final") {
+        return {
+          type,
+          at: targetAt,
+          ready,
+          waitMs,
+          value: ready ? "现在" : formatDuration(waitMs, true),
+          sub: `最佳收尾 ${formatClock(targetAt)} · 浇完约 ${formatClock(plan.fastestAt)} 成熟`,
+          label: ready ? "最佳收尾浇水已到" : "等待最佳收尾浇水"
+        };
+      }
+
+      if (type === "first") {
+        return {
+          type,
+          at: targetAt,
+          ready,
+          waitMs,
+          value: ready ? "现在" : formatDuration(waitMs, true),
+          sub: `首次自浇可直接满额减时 · 约减 ${formatDuration(targetReduction, true)}`,
+          label: ready ? "首次自浇可用" : "等待首次自浇"
+        };
+      }
+
+      return {
+        type,
+        at: targetAt,
+        ready,
+        waitMs,
+        value: ready ? "现在" : formatDuration(waitMs, true),
+        sub: `${ready ? "已达最大间隔" : `最大间隔 ${formatClock(targetAt)}`} · 约减 ${formatDuration(targetReduction, true)}`,
+        label: ready ? "最大间隔浇水已到" : "等待最大间隔浇水"
+      };
+    }
+
     function getCurrentTheoreticalPlan(farm, now = Date.now()) {
       const rule = cropRule(farm.cropKey);
       const matureAt = getMatureAt(farm);
@@ -5378,14 +5440,14 @@
 
       if (farm) {
         const matureAt = getMatureAt(farm);
-        const nextWaterAt = getNextWaterAt(farm);
         const crop = CROP_TYPES[farm.cropKey];
+        const waterTarget = getWaterReminderTarget(farm, now);
 
-        const waterKey = `${farm.id}-water-${farm.lastSelfWaterAt || "first"}`;
+        const waterKey = `${farm.id}-water-${waterTarget.type}-${farm.lastSelfWaterAt || "first"}-${farm.friendWaterCount}-${farm.sunbinUsed ? "sunbin" : "normal"}`;
         const harvestKey = `${farm.id}-harvest-${matureAt}`;
 
-        if (now >= nextWaterAt && now < matureAt && !notified[waterKey]) {
-          showReminder("可以浇水了", `${crop.short} 可以回游戏浇水，然后在工具里打卡。`);
+        if (waterTarget.at && now >= waterTarget.at && now < matureAt && !notified[waterKey]) {
+          showReminder(waterTarget.label, `${crop.short} ${waterTarget.sub}。回游戏浇水后在工具里打卡。`);
           nextNotified[waterKey] = true;
         }
 
@@ -5486,6 +5548,7 @@
       const friendRemain = rule.friendMaxCount - farm.friendWaterCount;
       const sunbinReduction = farm.sunbinUsed ? (farm.sunbinReductionMs || getSunbinReduction(farm.cropKey)) : getSunbinReduction(farm.cropKey);
       const theoreticalPlan = getCurrentTheoreticalPlan(farm, now);
+      const waterTarget = getWaterReminderTarget(farm, now, theoreticalPlan);
       const bestFinalWater = formatBestFinalWater(theoreticalPlan, matured);
       const theoreticalParts = [
         `从当前状态约 ${formatDuration(theoreticalPlan.durationMs, true)}`,
@@ -5495,7 +5558,7 @@
           : theoreticalPlan.finalWaterAt ? "收尾自浇优化" : theoreticalPlan.label
       ];
 
-      renderStats(farm, crop, matureAt, waterHint, matured, remaining);
+      renderStats(farm, crop, matureAt, waterTarget, theoreticalPlan, matured, remaining);
 
       els.farmArea.innerHTML = `
         <article class="farm-card">
@@ -5534,12 +5597,12 @@
               <div class="metric">
                 <div class="metric-label">⏰ 剩余成熟</div>
                 <div class="metric-value">${matured ? "可以收菜了" : formatDuration(remaining)}</div>
-                <div class="metric-sub">预计 ${formatClock(matureAt)}</div>
+                <div class="metric-sub">预计 ${formatClock(matureAt)}<br>理论最短 ${matured ? "已成熟" : formatClock(theoreticalPlan.fastestAt)}</div>
               </div>
               <div class="metric">
-                <div class="metric-label">💧 下次自浇</div>
-                <div class="metric-value">${matured ? "无需浇水" : waterHint.ready ? "现在可浇" : formatDuration(waterHint.waitMs)}</div>
-                <div class="metric-sub">${waterHint.nextAt ? `可浇时间 ${formatClock(waterHint.nextAt)}<br>` : ""}${waterHint.label}<br>${waterHint.maxAt ? `最大间隔 ${formatClock(waterHint.maxAt)} · ` : ""}${waterHint.maxLabel}</div>
+                <div class="metric-label">💧 距离最大间隔</div>
+                <div class="metric-value">${matured ? "无需浇水" : waterTarget.value}</div>
+                <div class="metric-sub">${matured ? "作物已成熟" : `${waterTarget.sub}<br>${waterTarget.type === "final" ? "最佳收尾早于最大间隔，按收尾时间提醒" : waterTarget.type === "first" ? "首次自浇直接满额，提醒后打卡即可" : "按最大间隔提醒，提前浇水仍可手动打卡"}`}</div>
               </div>
               <div class="metric">
                 <div class="metric-label">🤝 好友浇水</div>
@@ -5621,13 +5684,13 @@
       els.statFriend.textContent = "0/4";
     }
 
-    function renderStats(farm, crop, matureAt, waterHint, matured, remaining) {
+    function renderStats(farm, crop, matureAt, waterTarget, theoreticalPlan, matured, remaining) {
       els.statStatus.textContent = matured ? "可收获" : "生长中";
       els.statStatusSub.textContent = crop.short;
       els.statHarvest.textContent = matured ? "现在" : formatDuration(remaining, true);
-      els.statHarvestSub.textContent = `预计 ${formatClock(matureAt)}`;
-      els.statWater.textContent = matured ? "—" : waterHint.ready ? "现在" : formatDuration(waterHint.waitMs, true);
-      els.statWaterSub.textContent = matured ? "作物已成熟" : `${waterHint.nextAt ? `可浇 ${formatClock(waterHint.nextAt)} · ` : ""}${waterHint.maxLabel}`;
+      els.statHarvestSub.textContent = `预计 ${formatClock(matureAt)} · 理论最短 ${matured ? "已成熟" : formatClock(theoreticalPlan.fastestAt)}`;
+      els.statWater.textContent = matured ? "—" : waterTarget.value;
+      els.statWaterSub.textContent = matured ? "作物已成熟" : waterTarget.sub;
       els.statFriend.textContent = `${farm.friendWaterCount}/4`;
     }
 
