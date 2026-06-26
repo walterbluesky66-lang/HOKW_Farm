@@ -4757,11 +4757,11 @@
       const harvestActionInfos = activeInfos.filter(info => info.animal);
       const ranchHomeActions = [
         ...harvestActionInfos.map(info => `
-          <button class="btn ${info.ready ? "green" : "ghost"} ranch-home-harvest-btn" type="button" data-ranch-home-harvest-group="${escapeHtml(info.meta.key)}">
-            ${info.ready ? "✅" : "🐮"} 收${escapeHtml(info.meta.shortLabel)}
+          <button class="btn ${info.ready ? "green" : "ghost"} ranch-home-harvest-btn" type="button" data-ranch-home-harvest-group="${escapeHtml(info.meta.key)}" aria-label="收获${escapeHtml(info.meta.shortLabel)}批次">
+            <span class="btn-icon" aria-hidden="true">${info.ready ? "✅" : "🐮"}</span><span>收获</span>
           </button>
         `),
-        `<a class="btn ghost ranch-home-settings-link" href="ranch.html">设置牧场</a>`
+        `<a class="btn ghost ranch-home-settings-link" href="ranch.html"><span class="btn-icon" aria-hidden="true">⚙️</span><span>设置牧场</span></a>`
       ].join("");
 
       els.ranchHomeArea.innerHTML = `
@@ -5403,17 +5403,21 @@
                   ${farm.sunbinUsed ? `<span class="badge rose">⏩ 孙膑已催熟</span>` : ""}
                   ${matured ? `<span class="badge green">✅ 可收获</span>` : `<span class="badge amber">⏳ 生长中</span>`}
                 </div>
-                <h2 class="farm-name">${escapeHtml(displayName)}</h2>
-                <p class="farm-desc">${farm.planner ? `${escapeHtml(crop.label)} · ${farm.planner.goal === "coins" ? "20小时周末目标" : "经验优先排期"} · ${escapeHtml(archiveDesc)}` : `${escapeHtml(crop.label)} · ${escapeHtml(archiveDesc)}`}</p>
-              </div>
-              <div class="farm-title-tools">
-                <div class="farm-actions farm-actions-top">
-                  <button class="btn primary" data-action="selfWater" ${matured || !waterHint.ready ? "disabled" : ""}>💧 我浇水了</button>
-                  <button class="btn green" data-action="friendWater" ${matured || farm.friendWaterCount >= 4 ? "disabled" : ""}>🤝 好友浇水 +1</button>
-                  <button class="btn blue" data-action="sunbin" ${matured || farm.sunbinUsed ? "disabled" : ""}>⏩ 孙膑催熟</button>
-                  <button class="btn amber" data-action="harvest" ${!matured ? "disabled" : ""}>✅ 收获完成</button>
+                <div class="farm-name-line">
+                  <div class="farm-copy">
+                    <h2 class="farm-name">${escapeHtml(displayName)}</h2>
+                    <p class="farm-desc">${farm.planner ? `${escapeHtml(crop.label)} · ${farm.planner.goal === "coins" ? "20小时周末目标" : "经验优先排期"} · ${escapeHtml(archiveDesc)}` : `${escapeHtml(crop.label)} · ${escapeHtml(archiveDesc)}`}</p>
+                  </div>
+                  <div class="farm-title-tools">
+                    <div class="farm-actions farm-actions-top">
+                      <button class="btn primary" data-action="selfWater" ${matured || !waterHint.ready ? "disabled" : ""}><span class="btn-icon" aria-hidden="true">💧</span><span>我浇水了</span></button>
+                      <button class="btn green" data-action="friendWater" ${matured || farm.friendWaterCount >= 4 ? "disabled" : ""}><span class="btn-icon" aria-hidden="true">🤝</span><span>好友浇水 +1</span></button>
+                      <button class="btn blue" data-action="sunbin" ${matured || farm.sunbinUsed ? "disabled" : ""}><span class="btn-icon" aria-hidden="true">⏩</span><span>孙膑催熟</span></button>
+                      <button class="btn amber" data-action="harvest" ${!matured ? "disabled" : ""}><span class="btn-icon" aria-hidden="true">✅</span><span>收获完成</span></button>
+                    </div>
+                    <button class="btn rose farm-delete-action" data-action="delete"><span class="btn-icon" aria-hidden="true">🗑</span><span>删除记录</span></button>
+                  </div>
                 </div>
-                <button class="btn rose farm-delete-action" data-action="delete">🗑 删除记录</button>
               </div>
             </div>
 

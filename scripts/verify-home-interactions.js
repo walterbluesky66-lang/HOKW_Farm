@@ -33,6 +33,16 @@ const farmHeader = between(
   );
 });
 
+assert(
+  farmHeader.includes('class="farm-name-line"'),
+  "Farm action buttons should align with the crop title line"
+);
+
+assert(
+  (farmHeader.match(/class="btn-icon"/g) || []).length >= 5,
+  "Farm action buttons should use fixed-size icon spans"
+);
+
 const ranchHome = between(
   appJs,
   "function renderRanchHome()",
@@ -43,6 +53,14 @@ const ranchHome = between(
 assert(
   ranchHome.includes("data-ranch-home-harvest-group"),
   "Ranch reminder card should render harvest buttons on the home page"
+);
+assert(
+  ranchHome.includes("<span>收获</span>"),
+  "Ranch home harvest button should be labeled 收获"
+);
+assert(
+  !ranchHome.includes("收${escapeHtml(info.meta.shortLabel)}"),
+  "Ranch home harvest button should not include 16h/20h in its visible label"
 );
 assert(
   appJs.includes("data-ranch-home-harvest-group") && appJs.includes("harvestRanchGroup"),

@@ -121,6 +121,15 @@
     .btn.full-link { width: 100%; margin-top: 16px; }
     .hero-planner-link { min-width: 150px; }
     .hero-interest-link { min-width: 124px; }
+    .btn-icon {
+      width: 22px;
+      height: 22px;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 22px;
+      font-size: 18px;
+      line-height: 1;
+    }
 
     @media (min-width: 900px) {
       .hero .actions {
@@ -529,23 +538,30 @@
     @media (min-width: 760px) { .farm-body { padding: 28px; } }
 
     .farm-title-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: flex-start;
-      flex-wrap: wrap;
+      min-width: 0;
     }
 
     .farm-title-main {
-      flex: 1 1 260px;
+      min-width: 0;
+    }
+
+    .farm-name-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 22px;
+      margin-top: 18px;
+    }
+
+    .farm-copy {
+      flex: 1 1 auto;
       min-width: 0;
     }
 
     .farm-title-tools {
       display: flex;
-      flex: 1 1 360px;
+      flex: 0 0 auto;
       max-width: 100%;
-      min-width: min(100%, 320px);
       flex-direction: column;
       align-items: flex-end;
       gap: 10px;
@@ -569,7 +585,7 @@
     .badge.blue { background: #dbeafe; color: #1d4ed8; }
     .badge.rose { background: #ffe4e6; color: #be123c; }
 
-    .farm-name { margin: 14px 0 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
+    .farm-name { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: 0; }
     .farm-desc { margin: 8px 0 0; color: var(--muted); line-height: 1.7; }
 
     .metric-grid {
@@ -593,39 +609,46 @@
     .progress-note { margin-top: 8px; color: #94a3b8; font-size: 12px; line-height: 1.55; }
 
     .farm-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(160px, 1fr));
       gap: 11px;
       margin-top: 0;
     }
 
     .farm-actions .btn {
       min-height: 48px;
+      min-width: 0;
       white-space: nowrap;
     }
 
     .farm-delete-action {
       align-self: flex-end;
+      min-width: 160px;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 900px) {
+      .farm-name-line {
+        flex-direction: column;
+      }
+
       .farm-title-tools {
         width: 100%;
-        flex-basis: auto;
         align-items: stretch;
       }
 
-      .farm-actions {
-        justify-content: stretch;
-      }
-
       .farm-actions .btn {
-        flex: 1 1 150px;
+        width: 100%;
       }
 
       .farm-delete-action {
         align-self: stretch;
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .farm-actions {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -1353,44 +1376,45 @@
     }
 
     .ranch-home-panel .planner-head {
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 14px;
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 12px 18px;
     }
 
     .ranch-home-panel .planner-head > div:nth-child(2) {
-      flex: 1 1 240px;
       min-width: 0;
     }
 
     .ranch-home-top-actions {
       display: flex;
-      flex: 0 1 390px;
       flex-wrap: wrap;
       justify-content: flex-end;
+      align-items: flex-start;
       gap: 10px;
-      margin-left: auto;
+      margin-left: 0;
     }
 
     .ranch-home-top-actions .btn {
       min-height: 44px;
+      min-width: 134px;
       white-space: nowrap;
     }
 
     @media (max-width: 700px) {
       .ranch-home-panel .planner-head {
+        grid-template-columns: 48px minmax(0, 1fr);
         align-items: stretch;
       }
 
       .ranch-home-top-actions {
-        width: 100%;
-        flex-basis: auto;
+        grid-column: 1 / -1;
         justify-content: stretch;
-        margin-left: 0;
       }
 
       .ranch-home-top-actions .btn {
         flex: 1 1 145px;
+        min-width: 0;
       }
     }
 
