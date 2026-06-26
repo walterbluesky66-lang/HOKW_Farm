@@ -13,7 +13,7 @@
       <div>
         <div class="pill">🗂️ 作物/动物档案库</div>
         <h1>作物/动物档案库</h1>
-        <p class="lead">集中录入作物和动物资料。性价比计算器、牧场栏位和一键规划会读取这里保存的本地档案。</p>
+        <p class="lead">集中查看标准作物资料，并维护动物资料。性价比计算器、牧场栏位和一键规划会读取这里的档案。</p>
       </div>
       <div class="actions">
         <a class="btn ghost" href="index.html">← 返回打卡</a>
@@ -26,61 +26,21 @@
       <section class="panel archive-panel" id="cropArchive">
         <div class="panel-head">
           <div class="panel-icon" style="background:#ecfdf5;color:#047857;">🗂️</div>
-          <div><h2>作物资料</h2><p>保存后会立即写入当前浏览器，性价比计算器同步读取。</p></div>
+          <div><h2>标准作物库</h2><p>作物资料为只读标准库，由代码维护并随网站发布；性价比计算器和一键规划会读取这里的标准数据。</p></div>
         </div>
 
-        <form id="archiveForm" class="archive-form">
-          <input id="archiveEditingId" type="hidden" />
-
-          <div class="field">
-            <label for="archiveName">农作物名称</label>
-            <input id="archiveName" class="input" type="text" maxlength="24" placeholder="例如：旭日辣椒" />
-          </div>
-
-          <div class="form-grid archive-form-grid">
-            <div class="field">
-              <label for="archiveCropTime">成熟时间</label>
-              <select id="archiveCropTime" class="select"></select>
-            </div>
-            <div class="field">
-              <label for="archiveCoins">满级百工币</label>
-              <input id="archiveCoins" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
-            </div>
-            <div class="field">
-              <label for="archiveExp">可获得经验</label>
-              <input id="archiveExp" class="input" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
-            </div>
-            <div class="field">
-              <label for="archiveLevel">所需居所等级</label>
-              <input id="archiveLevel" class="input" type="number" min="1" step="1" inputmode="numeric" placeholder="1" />
-            </div>
-          </div>
-
-          <div class="two-actions archive-actions">
-            <button class="btn primary" type="submit" id="archiveSaveBtn">保存到档案库</button>
-            <button class="btn ghost is-hidden" type="button" id="archiveCancelBtn">取消编辑</button>
-          </div>
-        </form>
-
-        <div class="divider"></div>
+        <div class="notice good">
+          作物档案现在无法在线编辑。Lv.1-Lv.5 作物只在档案中展示，不参与性价比计算器、一键规划或当前作物自动选档。菜摊等级只用于下方参考收益展示。
+        </div>
 
         <div class="archive-toolbar">
           <div>
             <h3>已收录作物</h3>
-            <p id="archiveSummaryText">还没有录入作物。</p>
+            <p id="archiveSummaryText">正在读取标准作物库。</p>
           </div>
-          <button class="btn ghost" id="archiveExportBtn" type="button">导出标准库</button>
         </div>
 
         <div id="archiveList" class="archive-list"></div>
-
-        <div class="archive-export is-hidden" id="archiveExportPanel">
-          <textarea id="archiveExportText" class="archive-export-text" readonly></textarea>
-        </div>
-
-        <div class="notice">
-          本机录入会立即保存到浏览器。需要发给别人直接使用时，把导出的标准库数据固化进网页文件。
-        </div>
       </section>
 
       <section class="panel archive-panel" id="animalArchive">

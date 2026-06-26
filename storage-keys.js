@@ -5,7 +5,6 @@
     { key: "wzry-world-farm-helper-html-single-v3", label: "种植打卡" },
     { key: "wzry-world-farm-value-calculator-v1", label: "作物对比" },
     { key: "wzry-world-farm-value-calculator-options-v1", label: "计算器选项" },
-    { key: "wzry-world-farm-crop-archive-v1", label: "作物档案" },
     { key: "wzry-world-farm-animal-archive-v1", label: "动物档案" },
     { key: "wzry-world-farm-ranch-v1", label: "牧场管理" },
     { key: "wzry-world-farm-animal-value-calculator-v1", label: "动物对比" },

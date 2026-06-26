@@ -13,7 +13,7 @@
       <div>
         <div class="pill">🏡 居所设置</div>
         <h1>居所设置</h1>
-        <p class="lead">居所等级和农田数量会影响作物档案匹配、一键规划和周末目标进度。</p>
+        <p class="lead">居所等级和农田数量会影响作物档案匹配、一键规划和周末目标进度；菜摊等级仅用于作物档案的参考售价展示。</p>
       </div>
       <div class="actions">
         <a class="btn ghost" href="index.html">← 返回打卡</a>
@@ -43,9 +43,14 @@
             <label for="plannerLandCount">当前农田数量</label>
             <input id="plannerLandCount" class="input" type="number" min="1" step="1" inputmode="numeric" value="100" />
           </div>
+
+          <div class="field">
+            <label for="plannerCropStallLevel">当前菜摊等级</label>
+            <input id="plannerCropStallLevel" class="input" type="number" min="1" step="1" inputmode="numeric" value="1" />
+          </div>
         </div>
 
-        <div class="small farm-settings-note">修改后会同步给主页、牧场自动选档和一键规划。</div>
+        <div class="small farm-settings-note">居所等级和农田数量会同步给主页、牧场自动选档和一键规划；菜摊等级只用于档案里的“菜摊参考”收益，不参与性价比计算器和规划排序。</div>
       </section>
     </main>
   </div>

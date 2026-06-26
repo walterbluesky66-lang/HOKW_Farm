@@ -27,8 +27,40 @@
     const PLANNER_MAX_BLOCKS = 40;
     const VALUE_CROP_KEYS = ["fast5", "exp16", "money20", "exp28"];
     const BUILT_IN_CROP_ARCHIVE = [
-      // 后续确认具体作物数据后，可以把标准档案写在这里。
-      // 页面内录入的数据会保存在浏览器 localStorage；导出的标准库数据可用于更新这个数组。
+      { id: "crop-lv01-sumi", name: "粟米", cropKey: "", durationMinutes: 1, durationLabel: "1分钟", yieldCount: 1, exp: 1, seedCost: 0, basePriceLevel1: 0.8, basePriceMax: 1.6, coins: 1.6, farmLevel: 1, archiveOnly: true, icon: "🌾", createdAt: 1, updatedAt: 1 },
+      { id: "crop-lv02-xiangmigua", name: "香蜜瓜", cropKey: "", durationMinutes: 2, durationLabel: "2分钟", yieldCount: 1, exp: 2, seedCost: 2, basePriceLevel1: 2.98, basePriceMax: 5.96, coins: 5.96, farmLevel: 2, archiveOnly: true, icon: "🍈", createdAt: 2, updatedAt: 2 },
+      { id: "crop-lv03-liangyuanqie", name: "亮圆茄", cropKey: "", durationMinutes: 5, durationLabel: "5分钟", yieldCount: 2, exp: 5, seedCost: 3, basePriceLevel1: 3.85, basePriceMax: 7.7, coins: 15.4, farmLevel: 3, archiveOnly: true, icon: "🍆", createdAt: 3, updatedAt: 3 },
+      { id: "crop-lv04-yinggongding", name: "萤公丁", cropKey: "", durationMinutes: 15, durationLabel: "15分钟", yieldCount: 3, exp: 15, seedCost: 4, basePriceLevel1: 6.85, basePriceMax: 13.7, coins: 41.1, farmLevel: 4, archiveOnly: true, icon: "🌼", createdAt: 4, updatedAt: 4 },
+      { id: "crop-lv05-guangyinkui", name: "光阴葵", cropKey: "", durationMinutes: 60, durationLabel: "1小时", yieldCount: 5, exp: 60, seedCost: 6, basePriceLevel1: 7.9, basePriceMax: 15.8, coins: 79, farmLevel: 5, archiveOnly: true, icon: "🌻", createdAt: 5, updatedAt: 5 },
+      { id: "crop-lv06-caiyunmian", name: "彩云棉", cropKey: "fast5", durationMinutes: 300, durationLabel: "5小时", yieldCount: 20, exp: 360, seedCost: 18, basePriceLevel1: 8.95, basePriceMax: 17.9, coins: 358, farmLevel: 6, createdAt: 6, updatedAt: 6 },
+      { id: "crop-lv07-chaogongshanyao", name: "朝贡山药", cropKey: "exp16", durationMinutes: 960, durationLabel: "16小时", yieldCount: 25, exp: 1540, seedCost: 56, basePriceLevel1: 23.85, basePriceMax: 47.7, coins: 1192.5, farmLevel: 7, createdAt: 7, updatedAt: 7 },
+      { id: "crop-lv08-shuijingyumi", name: "水晶玉米", cropKey: "fast5", durationMinutes: 300, durationLabel: "5小时", yieldCount: 20, exp: 600, seedCost: 22, basePriceLevel1: 13, basePriceMax: 26, coins: 520, farmLevel: 8, createdAt: 8, updatedAt: 8 },
+      { id: "crop-lv10-yanxialajiao", name: "炎霞辣椒", cropKey: "money20", durationMinutes: 1200, durationLabel: "20小时", yieldCount: 30, exp: 0, seedCost: 152, basePriceLevel1: 50, basePriceMax: 100, coins: 3000, farmLevel: 10, createdAt: 9, updatedAt: 9 },
+      { id: "crop-lv10-shuangtianputao", name: "霜天葡萄", cropKey: "exp16", durationMinutes: 960, durationLabel: "16小时", yieldCount: 25, exp: 2300, seedCost: 66, basePriceLevel1: 28, basePriceMax: 56, coins: 1400, farmLevel: 10, createdAt: 10, updatedAt: 10 },
+      { id: "crop-lv12-zhuyanyuanqie", name: "朱颜圆茄", cropKey: "exp28", durationMinutes: 1680, durationLabel: "28小时", yieldCount: 30, exp: 4440, seedCost: 106, basePriceLevel1: 36.85, basePriceMax: 73.7, coins: 2211, farmLevel: 12, createdAt: 11, updatedAt: 11 },
+      { id: "crop-lv14-hupoyumi", name: "琥珀玉米", cropKey: "fast5", durationMinutes: 300, durationLabel: "5小时", yieldCount: 20, exp: 860, seedCost: 28, basePriceLevel1: 13.7, basePriceMax: 27.4, coins: 548, farmLevel: 14, createdAt: 12, updatedAt: 12 },
+      { id: "crop-lv16-ziweishanyao", name: "紫微山药", cropKey: "exp16", durationMinutes: 960, durationLabel: "16小时", yieldCount: 25, exp: 3070, seedCost: 80, basePriceLevel1: 31.9, basePriceMax: 63.8, coins: 1595, farmLevel: 16, createdAt: 13, updatedAt: 13 },
+      { id: "crop-lv17-canjinyunmian", name: "灿金云棉", cropKey: "money20", durationMinutes: 1200, durationLabel: "20小时", yieldCount: 30, exp: 0, seedCost: 176, basePriceLevel1: 60, basePriceMax: 120, coins: 3600, farmLevel: 17, createdAt: 14, updatedAt: 14 },
+      { id: "crop-lv18-qiuxiangputao", name: "秋香葡萄", cropKey: "exp28", durationMinutes: 1680, durationLabel: "28小时", yieldCount: 30, exp: 5910, seedCost: 124, basePriceLevel1: 40, basePriceMax: 80, coins: 2400, farmLevel: 18, createdAt: 15, updatedAt: 15 },
+      { id: "crop-lv20-chiguiyumi", name: "赤瑰玉米", cropKey: "fast5", durationMinutes: 300, durationLabel: "5小时", yieldCount: 20, exp: 1150, seedCost: 36, basePriceLevel1: 17.9, basePriceMax: 35.8, coins: 716, farmLevel: 20, createdAt: 16, updatedAt: 16 },
+      { id: "crop-lv22-ruyishizi", name: "如意柿子", cropKey: "exp16", durationMinutes: 960, durationLabel: "16小时", yieldCount: 25, exp: 4070, seedCost: 106, basePriceLevel1: 43.85, basePriceMax: 88, coins: 2200, farmLevel: 22, createdAt: 17, updatedAt: 17 },
+      { id: "crop-lv23-yeziyunmian", name: "曳紫云棉", cropKey: "money20", durationMinutes: 1200, durationLabel: "20小时", yieldCount: 30, exp: 0, seedCost: 240, basePriceLevel1: 80, basePriceMax: 160, coins: 4800, farmLevel: 23, createdAt: 18, updatedAt: 18 },
+      { id: "crop-lv24-fulutaozi", name: "福禄桃子", cropKey: "exp28", durationMinutes: 1680, durationLabel: "28小时", yieldCount: 30, exp: 7800, seedCost: 168, basePriceLevel1: 56.85, basePriceMax: 113.7, coins: 3411, farmLevel: 24, createdAt: 19, updatedAt: 19 },
+      { id: "crop-lv26-jianlingtiancai", name: "箭翎甜菜", cropKey: "fast5", durationMinutes: 300, durationLabel: "5小时", yieldCount: 20, exp: 1460, seedCost: 46, basePriceLevel1: 23.86, basePriceMax: 47.7, coins: 954, farmLevel: 26, createdAt: 20, updatedAt: 20 },
+      { id: "crop-lv28-chongjinputao", name: "舂堇葡萄", cropKey: "exp16", durationMinutes: 960, durationLabel: "16小时", yieldCount: 25, exp: 4920, seedCost: 132, basePriceLevel1: 51.9, basePriceMax: 103.8, coins: 2595, farmLevel: 28, createdAt: 21, updatedAt: 21 },
+      { id: "crop-lv30-xurilajiao", name: "旭日辣椒", cropKey: "money20", durationMinutes: 1200, durationLabel: "20小时", yieldCount: 30, exp: 0, seedCost: 290, basePriceLevel1: 97, basePriceMax: 194, coins: 5820, farmLevel: 30, createdAt: 22, updatedAt: 22 },
+      { id: "crop-lv32-molubingtao", name: "魔露冰桃", cropKey: "exp28", durationMinutes: 1680, durationLabel: "28小时", yieldCount: 30, exp: 9005, seedCost: 204, basePriceLevel1: 66.85, basePriceMax: 133.7, coins: 4011, farmLevel: 32, createdAt: 23, updatedAt: 23 },
+      { id: "crop-lv34-hongyingtiancai", name: "红缨甜菜", cropKey: "fast5", durationMinutes: 300, durationLabel: "5小时", yieldCount: 20, exp: 1680, seedCost: 56, basePriceLevel1: 29.8, basePriceMax: 59.6, coins: 1192, farmLevel: 34, createdAt: 24, updatedAt: 24 },
+      { id: "crop-lv36-bilinghuoshi", name: "碧伶火柿", cropKey: "exp16", durationMinutes: 960, durationLabel: "16小时", yieldCount: 25, exp: 5683, seedCost: 162, basePriceLevel1: 63.86, basePriceMax: 128, coins: 3200, farmLevel: 36, createdAt: 25, updatedAt: 25 },
+      { id: "crop-lv38-yanshayunmian", name: "胭纱云棉", cropKey: "money20", durationMinutes: 1200, durationLabel: "20小时", yieldCount: 30, exp: 0, seedCost: 366, basePriceLevel1: 123, basePriceMax: 246, coins: 7380, farmLevel: 38, createdAt: 26, updatedAt: 26 },
+      { id: "crop-lv40-bingpolajiao", name: "冰魄辣椒", cropKey: "exp28", durationMinutes: 1680, durationLabel: "28小时", yieldCount: 30, exp: 10483, seedCost: 256, basePriceLevel1: 88.45, basePriceMax: 174, coins: 5220, farmLevel: 40, createdAt: 27, updatedAt: 27 },
+      { id: "crop-lv42-cuixiyuanqie", name: "翠洗圆茄", cropKey: "fast5", durationMinutes: 300, durationLabel: "5小时", yieldCount: 20, exp: 1968, seedCost: 72, basePriceLevel1: 36, basePriceMax: 72, coins: 1440, farmLevel: 42, createdAt: 28, updatedAt: 28 },
+      { id: "crop-lv44-ganlinputao", name: "甘霖葡萄", cropKey: "exp16", durationMinutes: 960, durationLabel: "16小时", yieldCount: 25, exp: 6605, seedCost: 208, basePriceLevel1: 84, basePriceMax: 168, coins: 4200, farmLevel: 44, createdAt: 29, updatedAt: 29 },
+      { id: "crop-lv46-xingyelongyan", name: "星夜龙眼", cropKey: "money20", durationMinutes: 1200, durationLabel: "20小时", yieldCount: 30, exp: 0, seedCost: 0, basePriceLevel1: 157, basePriceMax: 314, coins: 9420, farmLevel: 46, createdAt: 30, updatedAt: 30 },
+      { id: "crop-lv48-jingzhelajiao", name: "惊蛰辣椒", cropKey: "exp28", durationMinutes: 1680, durationLabel: "28小时", yieldCount: 30, exp: 12096, seedCost: 0, basePriceLevel1: 110, basePriceMax: 220, coins: 6600, farmLevel: 48, createdAt: 31, updatedAt: 31 },
+      { id: "crop-lv50-jinqingyumi", name: "堇青玉米", cropKey: "fast5", durationMinutes: 300, durationLabel: "5小时", yieldCount: 20, exp: 2280, seedCost: 0, basePriceLevel1: 45, basePriceMax: 90, coins: 1800, farmLevel: 50, createdAt: 32, updatedAt: 32 },
+      { id: "crop-lv52-huanxiyuanqie", name: "浣溪圆茄", cropKey: "exp16", durationMinutes: 960, durationLabel: "16小时", yieldCount: 25, exp: 7680, seedCost: 252, basePriceLevel1: 100, basePriceMax: 200, coins: 5000, farmLevel: 52, createdAt: 33, updatedAt: 33 },
+      { id: "crop-lv54-dieyinglianzi", name: "蝶影莲子", cropKey: "money20", durationMinutes: 1200, durationLabel: "20小时", yieldCount: 30, exp: 0, seedCost: 560, basePriceLevel1: 184, basePriceMax: 368, coins: 11040, farmLevel: 54, createdAt: 34, updatedAt: 34 }
     ];
     const BUILT_IN_ANIMAL_ARCHIVE = [
       // 后续确认具体动物数据后，可以把标准档案写在这里。
@@ -42,7 +74,6 @@
       { key: STORAGE_KEY, label: "种植打卡" },
       { key: VALUE_CALCULATOR_KEY, label: "作物对比" },
       { key: VALUE_CALCULATOR_OPTIONS_KEY, label: "计算器选项" },
-      { key: CROP_ARCHIVE_KEY, label: "作物档案" },
       { key: ANIMAL_ARCHIVE_KEY, label: "动物档案" },
       { key: RANCH_KEY, label: "牧场管理" },
       { key: ANIMAL_VALUE_CALCULATOR_KEY, label: "动物对比" },
@@ -144,6 +175,7 @@
       plannerLevelDown: document.getElementById("plannerLevelDown"),
       plannerLevelUp: document.getElementById("plannerLevelUp"),
       plannerLandCount: document.getElementById("plannerLandCount"),
+      plannerCropStallLevel: document.getElementById("plannerCropStallLevel"),
       plannerWeekendTarget: document.getElementById("plannerWeekendTarget"),
       plannerIncludeBlessing: document.getElementById("plannerIncludeBlessing"),
       plannerSleepStart: document.getElementById("plannerSleepStart"),
@@ -283,29 +315,32 @@
 
     function renderValueArchiveOptions() {
       if (!els.valueArchiveSelect) return;
-      if (!cropArchiveItems.length) {
-        els.valueArchiveSelect.innerHTML = `<option value="">先录入作物档案</option>`;
+      const availableItems = getComputableCropArchiveItems()
+        .filter(item => item.farmLevel <= plannerState.currentLevel);
+
+      if (!availableItems.length) {
+        els.valueArchiveSelect.innerHTML = `<option value="">当前居所等级暂无可计算作物</option>`;
         els.valueArchiveSelect.value = "";
         refreshCustomSelect(els.valueArchiveSelect);
         return;
       }
 
       const currentValue = els.valueArchiveSelect.value;
-      els.valueArchiveSelect.innerHTML = cropArchiveItems.map(item => {
+      els.valueArchiveSelect.innerHTML = availableItems.map(item => {
         const crop = CROP_TYPES[item.cropKey];
         const meta = [
           `${crop.short}`,
           `Lv.${item.farmLevel}`,
-          `${formatNumber(item.exp)}经验`,
-          `${formatNumber(item.coins)}百工币`
+          `${formatNumber(item.exp)} 经验`,
+          `${formatNumber(item.coins)} 基准百工币`
         ].join(" · ");
         return `<option value="${escapeHtml(item.id)}" data-icon="${escapeHtml(crop.icon)}">${escapeHtml(item.name)} · ${escapeHtml(meta)}</option>`;
       }).join("");
 
-      if (cropArchiveItems.some(item => item.id === currentValue)) {
+      if (availableItems.some(item => item.id === currentValue)) {
         els.valueArchiveSelect.value = currentValue;
       } else {
-        els.valueArchiveSelect.value = cropArchiveItems[0].id;
+        els.valueArchiveSelect.value = availableItems[0].id;
       }
 
       refreshCustomSelect(els.valueArchiveSelect);
@@ -652,7 +687,7 @@
       els.plannerStopBtn?.addEventListener("click", stopPlanner);
       els.plannerLevelDown?.addEventListener("click", () => adjustPlannerLevel(-1));
       els.plannerLevelUp?.addEventListener("click", () => adjustPlannerLevel(1));
-      [els.plannerLevel, els.plannerLandCount, els.plannerWeekendTarget, els.plannerIncludeBlessing, els.plannerSleepStart, els.plannerSleepEnd].forEach(input => {
+      [els.plannerLevel, els.plannerLandCount, els.plannerCropStallLevel, els.plannerWeekendTarget, els.plannerIncludeBlessing, els.plannerSleepStart, els.plannerSleepEnd].forEach(input => {
         input?.addEventListener("change", updatePlannerFromInputs);
         input?.addEventListener("input", () => {
           if (input.type === "number") updatePlannerFromInputs();
@@ -733,6 +768,7 @@
     function initializePlannerForm() {
       if (els.plannerLevel) els.plannerLevel.value = plannerState.currentLevel;
       if (els.plannerLandCount) els.plannerLandCount.value = plannerState.landCount;
+      if (els.plannerCropStallLevel) els.plannerCropStallLevel.value = plannerState.cropStallLevel;
       if (els.plannerWeekendTarget) els.plannerWeekendTarget.value = plannerState.weekendTarget;
       if (els.plannerIncludeBlessing) els.plannerIncludeBlessing.checked = plannerState.includeBlessing !== false;
       if (els.plannerSleepStart) els.plannerSleepStart.value = plannerState.sleepStart;
@@ -746,6 +782,9 @@
       const landCount = els.plannerLandCount
         ? readPositiveInteger(els.plannerLandCount.value)
         : plannerState.landCount;
+      const cropStallLevel = els.plannerCropStallLevel
+        ? readPositiveInteger(els.plannerCropStallLevel.value)
+        : plannerState.cropStallLevel;
       const weekendTarget = els.plannerWeekendTarget
         ? readNonNegativeNumber(els.plannerWeekendTarget.value)
         : plannerState.weekendTarget;
@@ -759,12 +798,13 @@
         ? (els.plannerSleepEnd.value || PLANNER_DEFAULT_SLEEP_END)
         : plannerState.sleepEnd;
 
-      if (currentLevel === null || landCount === null || weekendTarget === null) return null;
+      if (currentLevel === null || landCount === null || cropStallLevel === null || weekendTarget === null) return null;
       if (!isValidTimeValue(sleepStart) || !isValidTimeValue(sleepEnd)) return null;
 
       return {
         currentLevel,
         landCount,
+        cropStallLevel,
         weekendTarget,
         includeBlessing,
         sleepStart,
@@ -1018,21 +1058,12 @@
     }
 
     function loadCropArchiveItems() {
-      try {
-        const raw = localStorage.getItem(CROP_ARCHIVE_KEY);
-        const parsed = raw ? JSON.parse(raw) : BUILT_IN_CROP_ARCHIVE;
-        const list = Array.isArray(parsed) ? parsed : [];
-        return list
-          .map(normalizeArchiveItem)
-          .filter(Boolean)
-          .sort((a, b) => a.createdAt - b.createdAt);
-      } catch (err) {
-        return BUILT_IN_CROP_ARCHIVE.map(normalizeArchiveItem).filter(Boolean);
-      }
+      localStorage.removeItem(CROP_ARCHIVE_KEY);
+      return sortCropArchiveItems(BUILT_IN_CROP_ARCHIVE.map(normalizeArchiveItem).filter(Boolean));
     }
 
     function saveCropArchiveItems() {
-      localStorage.setItem(CROP_ARCHIVE_KEY, JSON.stringify(cropArchiveItems));
+      localStorage.removeItem(CROP_ARCHIVE_KEY);
     }
 
     function loadAnimalArchiveItems() {
@@ -1246,7 +1277,7 @@
 
     function getPreferredArchiveItem(cropKey, level = plannerState.currentLevel, mode = "balanced") {
       const maxLevel = Math.max(1, Number(level) || 1);
-      const candidates = cropArchiveItems
+      const candidates = getComputableCropArchiveItems()
         .filter(item => item.cropKey === cropKey && item.farmLevel <= maxLevel);
 
       if (!candidates.length) return null;
@@ -1272,7 +1303,7 @@
       const archiveId = farm.planner?.archiveId || farm.archiveId;
       if (archiveId) {
         const archiveItem = cropArchiveItems.find(item => item.id === archiveId);
-        if (archiveItem) return archiveItem;
+        if (archiveItem && isCropArchiveItemComputable(archiveItem)) return archiveItem;
       }
       return getPreferredArchiveItem(farm.cropKey, level, getArchiveModeForCrop(farm.cropKey));
     }
@@ -1289,72 +1320,90 @@
 
     function normalizeArchiveItem(raw, index = 0) {
       if (!raw || typeof raw !== "object") return null;
+      const archiveOnly = raw.archiveOnly === true || Number(raw.farmLevel) < 6;
       const cropKey = CROP_TYPES[raw.cropKey] && VALUE_CROP_KEYS.includes(raw.cropKey) ? raw.cropKey : "";
       const name = String(raw.name || "").trim();
       const exp = Number(raw.exp);
-      const coins = Number(raw.coins);
+      const yieldCount = Number(raw.yieldCount);
+      const basePriceLevel1 = Number(raw.basePriceLevel1);
+      const basePriceMax = Number(raw.basePriceMax);
+      const fallbackCoins = Number.isFinite(basePriceMax) && Number.isFinite(yieldCount)
+        ? basePriceMax * yieldCount
+        : Number(raw.coins);
+      const coins = Number.isFinite(Number(raw.coins)) ? Number(raw.coins) : fallbackCoins;
+      const seedCost = Number(raw.seedCost || 0);
+      const durationMinutes = Number(raw.durationMinutes);
       const farmLevel = Number(raw.farmLevel);
 
-      if (!cropKey || !name) return null;
+      if (!name) return null;
+      if (!archiveOnly && !cropKey) return null;
       if (!Number.isFinite(exp) || exp < 0) return null;
       if (!Number.isFinite(coins) || coins < 0) return null;
       if (!Number.isFinite(farmLevel) || farmLevel < 1 || !Number.isInteger(farmLevel)) return null;
+      if (!Number.isFinite(yieldCount) || yieldCount < 0) return null;
+      if (!Number.isFinite(basePriceLevel1) || basePriceLevel1 < 0) return null;
+      if (!Number.isFinite(basePriceMax) || basePriceMax < 0) return null;
 
       return {
         id: String(raw.id || `archive-${index}-${Date.now()}`),
         name: name.slice(0, 24),
         cropKey,
+        durationMinutes: Number.isFinite(durationMinutes) && durationMinutes > 0
+          ? durationMinutes
+          : (CROP_TYPES[cropKey]?.minutes || 0),
+        durationLabel: String(raw.durationLabel || "").trim(),
+        yieldCount,
         exp,
+        seedCost: Number.isFinite(seedCost) && seedCost >= 0 ? seedCost : 0,
+        basePriceLevel1,
+        basePriceMax,
         coins,
         farmLevel,
+        archiveOnly,
+        icon: String(raw.icon || "").trim(),
         createdAt: Number.isFinite(raw.createdAt) ? Number(raw.createdAt) : Date.now(),
         updatedAt: Number.isFinite(raw.updatedAt) ? Number(raw.updatedAt) : Date.now()
       };
     }
 
+    function sortCropArchiveItems(items) {
+      return [...items].sort((a, b) => b.farmLevel - a.farmLevel || a.createdAt - b.createdAt);
+    }
+
+    function isCropArchiveItemComputable(item) {
+      return Boolean(
+        item &&
+        !item.archiveOnly &&
+        item.farmLevel >= 6 &&
+        CROP_TYPES[item.cropKey] &&
+        VALUE_CROP_KEYS.includes(item.cropKey)
+      );
+    }
+
+    function getComputableCropArchiveItems() {
+      return cropArchiveItems.filter(isCropArchiveItemComputable);
+    }
+
     function migrateLegacyCalculatorItems() {
-      let archiveChanged = false;
       let calculatorChanged = false;
 
       calculatorItems = calculatorItems.map(item => {
-        if (item.archiveId) return item;
-        if (!item || !CROP_TYPES[item.cropKey]) return item;
-
-        const name = String(item.name || CROP_TYPES[item.cropKey].short).trim();
-        const exp = Math.max(0, Number(item.exp) || 0);
-        const coins = Math.max(0, Number(item.coins) || 0);
-        const existing = cropArchiveItems.find(archiveItem =>
-          archiveItem.name === name &&
-          archiveItem.cropKey === item.cropKey &&
-          archiveItem.exp === exp &&
-          archiveItem.coins === coins
-        );
-
-        const archiveItem = existing || {
-          id: `archive-legacy-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          name,
-          cropKey: item.cropKey,
-          exp,
-          coins,
-          farmLevel: 1,
-          createdAt: item.createdAt || Date.now(),
-          updatedAt: Date.now()
-        };
-
-        if (!existing) {
-          cropArchiveItems.push(archiveItem);
-          archiveChanged = true;
+        if (!item?.archiveId) {
+          calculatorChanged = true;
+          return null;
         }
-
-        calculatorChanged = true;
+        const archiveItem = cropArchiveItems.find(archive => archive.id === item.archiveId);
+        if (!archiveItem || !isCropArchiveItemComputable(archiveItem)) {
+          calculatorChanged = true;
+          return null;
+        }
         return {
           id: item.id || `value-${Date.now()}-${Math.random().toString(36).slice(2)}`,
           archiveId: archiveItem.id,
           createdAt: item.createdAt || Date.now()
         };
-      }).filter(item => item && (item.archiveId || CROP_TYPES[item.cropKey]));
+      }).filter(Boolean);
 
-      if (archiveChanged) saveCropArchiveItems();
       if (calculatorChanged) saveCalculatorItems();
     }
 
@@ -1396,6 +1445,9 @@
       const landCount = Number.isInteger(Number(state.landCount)) && Number(state.landCount) > 0
         ? Number(state.landCount)
         : PLANNER_DEFAULT_LAND_COUNT;
+      const cropStallLevel = Number.isInteger(Number(state.cropStallLevel)) && Number(state.cropStallLevel) > 0
+        ? Number(state.cropStallLevel)
+        : 1;
       const weekendTarget = Number.isFinite(Number(state.weekendTarget)) && Number(state.weekendTarget) >= 0
         ? Number(state.weekendTarget)
         : PLANNER_DEFAULT_WEEKEND_TARGET;
@@ -1414,6 +1466,7 @@
         startedAt,
         currentLevel,
         landCount,
+        cropStallLevel,
         weekendTarget,
         includeBlessing,
         sleepStart,
@@ -2436,8 +2489,8 @@
       const archiveId = els.valueArchiveSelect.value;
       const archiveItem = cropArchiveItems.find(item => item.id === archiveId);
 
-      if (!archiveItem) {
-        showToast("先录入作物档案", "收益对比现在直接从档案库选择作物。", "warn");
+      if (!archiveItem || !isCropArchiveItemComputable(archiveItem) || archiveItem.farmLevel > plannerState.currentLevel) {
+        showToast("暂无可用作物", "收益对比只使用当前居所等级可种的 Lv.6 及以上标准作物。", "warn");
         return;
       }
 
@@ -2580,47 +2633,97 @@
 
     function renderCropArchive() {
       if (!els.archiveSummaryText || !els.archiveList) return;
+      const currentLevel = plannerState.currentLevel;
+      const availableItems = sortCropArchiveItems(cropArchiveItems.filter(item => item.farmLevel <= currentLevel));
+      const lockedItems = sortCropArchiveItems(cropArchiveItems.filter(item => item.farmLevel > currentLevel));
+      const computableCount = getComputableCropArchiveItems().length;
+
       els.archiveSummaryText.textContent = cropArchiveItems.length
-        ? `已收录 ${cropArchiveItems.length} 种作物。`
+        ? `标准库共 ${cropArchiveItems.length} 种作物；当前 Lv.${formatNumber(currentLevel)} 可查看 ${availableItems.length} 种，${computableCount} 种可参与计算。`
         : "还没有录入作物。";
 
       if (!cropArchiveItems.length) {
         els.archiveList.innerHTML = `
           <div class="value-empty">
-            <strong>先保存一条作物档案</strong>
-            <span>档案会成为收益对比的唯一作物来源，避免同一作物重复手填。</span>
+            <strong>标准作物库为空</strong>
+            <span>作物档案现在由代码维护，发布后会成为所有计算和规划的唯一来源。</span>
           </div>
         `;
         return;
       }
 
-      els.archiveList.innerHTML = cropArchiveItems.map(item => {
-        const crop = CROP_TYPES[item.cropKey];
-        const inCompare = calculatorItems.some(compareItem => compareItem.archiveId === item.id);
-        return `
-          <article class="archive-item">
-            <div class="archive-main">
-              <div class="archive-icon">${crop.icon}</div>
-              <div>
-                <div class="archive-title-row">
-                  <h3>${escapeHtml(item.name)}</h3>
-                  ${inCompare ? `<span class="archive-badge">对比中</span>` : ""}
-                </div>
-                <div class="archive-meta">
-                  <span>${escapeHtml(crop.short)}</span>
-                  <span>Lv.${formatNumber(item.farmLevel)}</span>
-                  <span>${formatNumber(item.exp)} 经验</span>
-                  <span>${formatNumber(item.coins)} 百工币</span>
-                </div>
+      els.archiveList.innerHTML = `
+        <div class="archive-section">
+          <div class="archive-section-head">
+            <h3>当前等级可用作物</h3>
+            <span>按等级从高到低排序</span>
+          </div>
+          ${availableItems.length
+            ? availableItems.map(item => renderCropArchiveItem(item, "available")).join("")
+            : `<div class="value-empty"><strong>当前等级暂无可用作物</strong><span>提高居所等级后会在这里显示标准库作物。</span></div>`}
+        </div>
+        ${lockedItems.length ? `
+          <details class="archive-section archive-locked-section">
+            <summary>查看更高等级作物（${formatNumber(lockedItems.length)} 种）</summary>
+            <div class="archive-locked-list">
+              ${lockedItems.map(item => renderCropArchiveItem(item, "locked")).join("")}
+            </div>
+          </details>
+        ` : ""}
+      `;
+    }
+
+    function renderCropArchiveItem(item, status) {
+      const meta = getCropArchiveMeta(item);
+      const inCompare = isCropArchiveItemComputable(item) && calculatorItems.some(compareItem => compareItem.archiveId === item.id);
+      const cropStallCoins = item.coins * getCropStallMultiplier();
+      const statusBadge = item.archiveOnly
+        ? `<span class="archive-badge archive-badge-warn">仅档案</span>`
+        : status === "locked"
+          ? `<span class="archive-badge archive-badge-blue">未解锁</span>`
+          : `<span class="archive-badge">可计算</span>`;
+
+      return `
+        <article class="archive-item crop-archive-item">
+          <div class="archive-main">
+            <div class="archive-icon">${escapeHtml(meta.icon)}</div>
+            <div>
+              <div class="archive-title-row">
+                <h3>${escapeHtml(item.name)}</h3>
+                ${statusBadge}
+                ${inCompare ? `<span class="archive-badge archive-badge-blue">对比中</span>` : ""}
+              </div>
+              <div class="archive-meta">
+                <span>${escapeHtml(meta.short)}</span>
+                <span>Lv.${formatNumber(item.farmLevel)}</span>
+                <span>产量 ${formatNumber(item.yieldCount)}</span>
+                <span>${formatNumber(item.exp)} 经验</span>
+                <span>种子 ${formatNumber(item.seedCost)} 百工币</span>
+                <span>满级基准单价 ${formatNumber(item.basePriceMax)}</span>
+              </div>
+              <div class="archive-meta archive-profit-meta">
+                <span>基准收益 ${formatNumber(item.coins)} 百工币/田</span>
+                <span>菜摊参考 Lv.${formatNumber(plannerState.cropStallLevel)}：${formatNumber(cropStallCoins)} 百工币/田</span>
               </div>
             </div>
-            <div class="archive-item-actions">
-              <button class="mini-btn neutral" type="button" data-archive-edit="${escapeHtml(item.id)}">编辑</button>
-              <button class="mini-btn" type="button" data-archive-delete="${escapeHtml(item.id)}">删除</button>
-            </div>
-          </article>
-        `;
-      }).join("");
+          </div>
+        </article>
+      `;
+    }
+
+    function getCropArchiveMeta(item) {
+      const crop = CROP_TYPES[item.cropKey];
+      if (crop) {
+        return {
+          icon: crop.icon,
+          short: `${crop.short} · ${formatDuration(crop.minutes * MINUTE, true)}`
+        };
+      }
+
+      return {
+        icon: item.icon || "🌱",
+        short: item.durationLabel || (item.durationMinutes ? formatDuration(item.durationMinutes * MINUTE, true) : "档案作物")
+      };
     }
 
     function renderAnimalArchive() {
@@ -2776,6 +2879,11 @@
 
     function getAnimalHarvestDuration(animal) {
       return animal.durationHours * HOUR * 0.75;
+    }
+
+    function getCropStallMultiplier(stallLevel = plannerState.cropStallLevel) {
+      const level = Math.max(1, Number(stallLevel) || 1);
+      return 1 + (level - 1) * 0.05;
     }
 
     function getAnimalStallMultiplier(stallLevel = ranchState.stallLevel) {
@@ -2973,7 +3081,7 @@
         .map(item => {
           if (item.archiveId) {
             const archiveItem = cropArchiveItems.find(archive => archive.id === item.archiveId);
-            if (!archiveItem || !CROP_TYPES[archiveItem.cropKey]) return null;
+            if (!archiveItem || !isCropArchiveItemComputable(archiveItem) || archiveItem.farmLevel > plannerState.currentLevel) return null;
             return {
               id: item.id,
               archiveId: item.archiveId,
@@ -3131,7 +3239,7 @@
                 <th>经验效率</th>
                 <th>百工币效率</th>
                 ${sunbinMode ? `<th>孙膑周期收益</th>` : ""}
-                <th>一块田收益</th>
+                <th>一块田基准收益</th>
                 <th></th>
               </tr>
             </thead>
@@ -3359,11 +3467,11 @@
           <section class="panel planner-panel">
             <div class="panel-head">
               <div class="panel-icon" style="background:#fff7ed;color:#c2410c;">🧭</div>
-              <div><h2>一键规划</h2><p>当前等级还没有可用作物档案。</p></div>
+              <div><h2>一键规划</h2><p>当前等级还没有可用于规划的标准作物。</p></div>
             </div>
             <div class="value-empty">
-              <strong>先补充作物档案</strong>
-              <span>请到作物档案库录入至少一种等级不高于 Lv.${formatNumber(plannerState.currentLevel)} 的作物。</span>
+              <strong>等待解锁 Lv.6 及以上作物</strong>
+              <span>一键规划只使用 Lv.6 及以上标准作物；当前居所 Lv.${formatNumber(plannerState.currentLevel)} 暂无可规划作物。</span>
             </div>
           </section>
         `;
@@ -3676,6 +3784,7 @@
       return {
         currentLevel: plannerState.currentLevel,
         landCount: plannerState.landCount,
+        cropStallLevel: plannerState.cropStallLevel,
         weekendTarget: plannerState.weekendTarget,
         includeBlessing: plannerState.includeBlessing !== false,
         sleepStart: plannerState.sleepStart,
@@ -5364,7 +5473,7 @@
       const archiveItem = getFarmArchiveItem(farm);
       const displayName = farm.planner?.cropName || farm.archiveName || archiveItem?.name || crop.label;
       const archiveDesc = archiveItem
-        ? `档案 Lv.${formatNumber(archiveItem.farmLevel)} · ${formatNumber(archiveItem.exp)} 经验 · ${formatNumber(archiveItem.coins)} 百工币`
+        ? `档案 Lv.${formatNumber(archiveItem.farmLevel)} · ${formatNumber(archiveItem.exp)} 经验 · ${formatNumber(archiveItem.coins)} 基准百工币`
         : crop.purpose;
       const now = Date.now();
       const matureAt = getMatureAt(farm);
