@@ -41,7 +41,7 @@
 - `interest-circle.js`：兴趣圈独立脚本，使用单独 `localStorage` 数据，不接入 `app.js`。
 - `package.json`：提供 `npm run build` 发布脚本和回归验证脚本。
 - `scripts/build-site.js`：生成 Cloudflare Pages 发布目录 `dist/`，只复制网站运行必需文件。
-- `scripts/verify-cloud-sync-reload-guard.js`：模拟云端旧快照恢复后的本地迁移场景，验证不会反复自动刷新。
+- `scripts/verify-cloud-sync-reload-guard.js`：模拟云端旧快照恢复后的本地迁移场景，以及恢复刷新前重复 Supabase auth 回调场景，验证不会反复自动刷新。
 - `supabase/user_snapshots.sql`：Supabase 私有云存档表、RLS 策略和更新时间触发器。
 - `wzry_world_farm_helper_progress_audio (1).html`：原始单文件版本，保留作参考。
 - `TODO.md`：后续开发计划。

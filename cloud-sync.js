@@ -15,6 +15,7 @@
     applyingRemote: false,
     uploadTimer: null,
     pendingUploadReason: "",
+    pendingRestoreReload: false,
     status: "云存档未连接",
     detail: "",
     lastError: "",
@@ -272,8 +273,14 @@
     state.session = session || null;
     state.email = session?.user?.email || "";
     if (!session) {
+      state.pendingRestoreReload = false;
       state.initialized = false;
       setStatus("云存档未登录", "登录后可自动同步到云端。");
+      renderStatus();
+      return;
+    }
+
+    if (state.pendingRestoreReload) {
       renderStatus();
       return;
     }
@@ -340,6 +347,7 @@
         state.applyingRemote = false;
       }
       saveRestoreMarker(data, user);
+      state.pendingRestoreReload = true;
       setStatus("已恢复云端存档", "页面即将刷新。");
       setTimeout(() => window.location.reload(), 700);
       return;

@@ -40,7 +40,7 @@
 - `interest-circle.js`：兴趣圈独立脚本，使用 `wzry-world-interest-circle-v1` 本地状态，不依赖 `app.js`。
 - `package.json`：提供 `npm run build` 发布脚本和回归验证脚本。
 - `scripts/build-site.js`：生成 Cloudflare Pages 发布目录 `dist/`，只复制网站运行必需文件。
-- `scripts/verify-cloud-sync-reload-guard.js`：模拟云端旧快照恢复后的本地迁移场景，验证不会反复自动刷新。
+- `scripts/verify-cloud-sync-reload-guard.js`：模拟云端旧快照恢复后的本地迁移场景，以及恢复刷新前重复 Supabase auth 回调场景，验证不会反复自动刷新。
 - `supabase/user_snapshots.sql`：Supabase 私有云存档表、RLS 策略和更新时间触发器。
 - `.gitignore`：忽略 `dist/`、`node_modules/` 和临时发布 ZIP。
 - `README.md`：项目规则和启动方式。
@@ -231,6 +231,12 @@ npm run build
 - 其他 Codex 对话也可以直接更新本文件，但不要删除旧日志，除非用户明确要求整理。
 
 ## 交接日志
+
+### 2026-07-08 - 修复规划页云存档自动刷新循环
+
+- 改动：`cloud-sync.js` 在云端快照恢复后、页面刷新执行前增加 `pendingRestoreReload` 防重入标记；如果 Supabase 在刷新前重复触发登录态回调，不再重新比较同一云端快照，也不会误清恢复标记，避免规划页旧云端快照与本地过期规划窗口刷新互相触发反复自动刷新；`scripts/verify-cloud-sync-reload-guard.js` 为每个模拟场景隔离 `Storage` 原型，并新增“恢复后刷新前重复 auth 回调”回归；`README.md` 和本交接文件已同步。
+- 验证：已先新增回归并运行 `npm run verify:cloud-sync`，观察到旧逻辑按预期失败，错误为 `Cloud sync should keep the restore marker when Supabase repeats the same session before the restore reload.`；完成修改后已运行 `node --check E:\HOKW_Farm\app.js`、`node --check E:\HOKW_Farm\interest-circle.js`、`node --check E:\HOKW_Farm\storage-keys.js`、`node --check E:\HOKW_Farm\cloud-sync.js`、`node --check E:\HOKW_Farm\scripts\build-site.js`、`node --check E:\HOKW_Farm\scripts\verify-cloud-sync-reload-guard.js`、`node --check E:\HOKW_Farm\scripts\verify-home-interactions.js`、`npm run verify:cloud-sync`、`npm run verify:home-interactions` 和 `npm run build`；构建显示 `Copied 16 files to dist` 且本地云同步配置为 disabled，已确认 `dist/` 只包含发布必需文件，`dist/cloud-config.js` 为空 Supabase 配置且 `syncEnabled: false`，未发现 service role、secret 或数据库密码关键词。
+- 后续注意：本次只修复云存档恢复刷新竞态，不改变一键规划排期算法、作物/动物数据、Supabase 表结构或本地可迁移 key；真实线上 Supabase 登录未在本机跑一遍，用户当前卡循环的浏览器在部署更新后可能仍会有一次恢复刷新，随后应停止循环并上传规范化快照。
 
 ### 2026-07-08 - 修复一键规划过期窗口和 Lv.52 性能
 
