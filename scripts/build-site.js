@@ -13,6 +13,7 @@ const siteFiles = [
   "ranch.html",
   "planner.html",
   "planner-detail.html",
+  "experience-planner.html",
   "interest-circle.html",
   "style.css",
   "storage-keys.js",

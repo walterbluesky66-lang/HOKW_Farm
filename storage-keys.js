@@ -9,6 +9,7 @@
     { key: "wzry-world-farm-ranch-v1", label: "牧场管理" },
     { key: "wzry-world-farm-animal-value-calculator-v1", label: "动物对比" },
     { key: "wzry-world-farm-planner-v1", label: "一键规划" },
+    { key: "wzry-world-farm-experience-planner-v1", label: "经验规划器" },
     { key: "wzry-world-interest-circle-v1", label: "兴趣圈" }
   ];
 

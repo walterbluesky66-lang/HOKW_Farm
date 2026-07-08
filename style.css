@@ -153,6 +153,7 @@
     .btn:disabled { opacity: 0.45; transform: none; box-shadow: none; }
     .btn.full-link { width: 100%; margin-top: 16px; }
     .hero-planner-link { min-width: 150px; }
+    .hero-experience-link { min-width: 150px; }
     .hero-interest-link { min-width: 124px; }
     .btn-icon {
       width: 22px;
@@ -173,6 +174,11 @@
       .hero-planner-link {
         order: -1;
         min-width: 190px;
+      }
+
+      .hero-experience-link {
+        order: -1;
+        min-width: 170px;
       }
 
       .hero-interest-link {
@@ -1644,6 +1650,111 @@
 
     @media (min-width: 760px) {
       .planner-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    .experience-panel,
+    .experience-explain-panel,
+    .experience-ledger-panel,
+    .experience-settings-panel {
+      overflow: hidden;
+    }
+
+    .experience-progress {
+      margin-top: 16px;
+    }
+
+    .experience-rule-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    @media (min-width: 760px) {
+      .experience-rule-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .experience-rule-grid .notice {
+      margin: 0;
+      min-width: 0;
+    }
+
+    .experience-rule-grid strong,
+    .experience-rule-grid span {
+      display: block;
+      line-height: 1.55;
+    }
+
+    .experience-rule-grid span {
+      margin-top: 5px;
+      color: #475569;
+      font-size: 13px;
+    }
+
+    .experience-ledger {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .experience-step {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border-radius: 18px;
+      padding: 13px 14px;
+      background: rgba(241, 245, 249, 0.82);
+      border: 1px solid rgba(226, 232, 240, 0.86);
+      min-width: 0;
+    }
+
+    .experience-step.is-target {
+      background: rgba(236, 253, 245, 0.9);
+      border-color: #a7f3d0;
+    }
+
+    .experience-step strong,
+    .experience-step small {
+      display: block;
+      margin-top: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .experience-step small {
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .experience-step-gain {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .experience-step-gain strong {
+      margin: 0;
+      color: #047857;
+      font-size: 18px;
+    }
+
+    .experience-step-gain span {
+      display: block;
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    @media (max-width: 640px) {
+      .experience-step {
+        grid-template-columns: 1fr;
+      }
+
+      .experience-step-gain {
+        text-align: left;
+        white-space: normal;
+      }
     }
 
     .planner-goal-card {

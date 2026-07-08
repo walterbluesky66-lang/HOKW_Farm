@@ -14,6 +14,7 @@
 - 牧场按 1-12 个栏位总数管理动物数量，用户只填写 16 小时动物和 20 小时动物各多少只，并按两组批次计时。
 - 支持浏览器通知、页面内提示和柔和提示音。
 - 支持一键规划二级页面，从开启规划起生成一周动态种植排期；二级页展示下一步、总体时间进度和当前作物进度，三级页展示完整一周计划。
+- 支持经验规划器二级页面；输入经验目标后，按一键规划理论作物排期和牧场最小催产间隔估算 7 天内能否达成。
 - 支持牧场管理二级页面；牧场暂不纳入一键规划排期。
 - 支持兴趣圈经验记录二级页面；主页仅作为入口，兴趣圈逻辑独立放在 `interest-circle.html` 和 `interest-circle.js`，不接入农场、牧场或一键规划数据。
 - 暂不管理药物作物，也不把药物作物混入经验或百工币收益计算。
@@ -30,13 +31,14 @@
 - `ranch.html`：牧场管理二级页面，负责牧场栏位数量、动物摊等级、16/20 小时动物数量和批次收获计时。
 - `planner.html`：一键规划二级页面，负责下一步建议、总体时间进度、当前作物进度、周末目标和睡眠时间规划。
 - `planner-detail.html`：一键规划三级详情页，按箭头卡片展示完整一周种植排期。
+- `experience-planner.html`：经验规划器二级页面，负责目标经验输入、作物理论排期经验、牧场批次经验和关键计算过程展示。
 - `interest-circle.html`：兴趣圈经验记录二级页面，负责按日期录入每组 TAG 的累计经验、查看历史和维护 TAG 分类。
 - `style.css`：页面样式。
 - `favicon.svg`：站点图标，避免线上浏览器请求默认图标时产生 404。
 - `storage-keys.js`：统一维护可导出、可导入、可云同步的本地数据键。
 - `cloud-config.js`：本地空配置占位；构建到 `dist/` 时由 `scripts/build-site.js` 根据 Cloudflare 环境变量生成线上配置。
 - `cloud-sync.js`：Supabase 邮箱验证码登录、云端快照恢复、恢复刷新防循环和自动上传逻辑。
-- `app.js`：作物配置、动物档案、浇水规则、进度计算、牧场批次、提醒、一键规划和本地存储逻辑。
+- `app.js`：作物配置、动物档案、浇水规则、进度计算、牧场批次、提醒、一键规划、经验规划器和本地存储逻辑。
 - `interest-circle.js`：兴趣圈独立脚本，使用 `wzry-world-interest-circle-v1` 本地状态，不依赖 `app.js`。
 - `package.json`：提供 `npm run build` 发布脚本和回归验证脚本。
 - `scripts/build-site.js`：生成 Cloudflare Pages 发布目录 `dist/`，只复制网站运行必需文件。
@@ -121,9 +123,10 @@
 - 一键规划不会自动覆盖当前作物，用户点击“按规划种下”后才会写入当前作物卡片；当前等级最高的 20 小时目标作物在双倍窗口收获后，会按 `农田数量 * 60` 计入目标进度。
 - 一键规划页可选择是否计入好友祈福；勾选时会把好友祈福成功的三倍产量纳入目标辅助判断，双倍窗口内每次成功祈福按额外 `120` 个目标数量计算，并按目标作物覆盖天数估算每天约 `2-5` 次成功祈福；如果若干轮目标作物加上可行祈福次数已经能完成目标，后续排期不再额外追加高价值目标作物；取消勾选时回到基础双倍收获算法。
 - 周末目标进度在 `planner.html` 顶部 summary 中用圆环展示，口径是作物获取数量进度；旧的横向周末目标进度条已移除；二级页总体时间进度条的节点卡片在桌面端按上下交错挂在对应位置，窄屏端按顺序卡片展示；完整周计划在 `planner-detail.html` 中按“作物卡片 → 作物卡片”展示。
+- 经验规划器二级页面：主页顶部提供入口；`experience-planner.html` 可输入目标经验，支持 `200W` / `200万` 简写；作物部分复用一键规划 7 天理论排期并按 `档案经验 × 农田数量` 计入，牧场部分按当前动物档案和栏位数量滚动计算 16h 动物每 12 小时、20h 动物每 15 小时的批次经验；页面展示预计达成、7 天累计、作物/牧场拆分、关键计算过程和近期经验账本，若 7 天内未达成则显示 `>7天`。
 - 兴趣圈经验记录页：默认内置 Excel 中 8 组 TAG，并把 `2026-06-20` 作为“前一天经验”、`2026-06-21` 作为“今天经验”初始历史记录；页面打开自动选中当天，可用上一天、下一天和日历查看/修改历史。
 - 兴趣圈录入的是每组 TAG 的累计经验；今日新增按当前日期累计值减去最近一个历史记录日累计值计算，离满额差值按 `今日新增 - 206` 显示，8200 达标剩余天数按每天满额 `206` 推算；比较基准按相对日期显示，如“昨日 · 617”；分类支持新增，已有分类在各自卡片内单独编辑分类名称和 TAG；已有分类不删除，只能删除分类下的单个 TAG，并可复制 TAG 文本。
-- “用户与存档管理”二级页面可把种植打卡、动物档案、作物/动物收益对比、牧场批次、一键规划和兴趣圈记录导出为 JSON，也可从备份 JSON 导入到当前浏览器；作物档案不再作为用户数据导出、导入或云同步，浏览器通知权限和已提醒标记不迁移。
+- “用户与存档管理”二级页面可把种植打卡、动物档案、作物/动物收益对比、牧场批次、一键规划、经验规划器和兴趣圈记录导出为 JSON，也可从备份 JSON 导入到当前浏览器；作物档案不再作为用户数据导出、导入或云同步，浏览器通知权限和已提醒标记不迁移。
 - 云存档第一版：所有页面加载 `storage-keys.js`、`cloud-config.js` 和 `cloud-sync.js`；未配置 Supabase 或未登录时保持本地模式；登录后读取 Supabase `user_snapshots` 的 `primary` 快照，云端有数据则首次覆盖本地并刷新；若刷新后本地脚本把旧快照迁移为新结构，会上传规范化后的本地快照而不是反复刷新；云端为空且本地有数据则初始化云端；登录状态下可迁移 localStorage key 变化会自动防抖上传完整 JSON 快照。
 - 支持 `npm run build` 生成 `dist/` 静态发布目录，当前复制 `index.html`、所有二/三级页面、`style.css`、`storage-keys.js`、`cloud-sync.js`、`app.js`、`interest-circle.js` 和 `favicon.svg`，并按环境变量生成 `dist/cloud-config.js`；`AGENTS.md`、`README.md`、`TODO.md`、`supabase/`、Excel 和原始参考 HTML 不进入发布目录。
 
@@ -145,13 +148,13 @@ npm run build
 
 手动验证：
 
-- 检查 `E:\HOKW_Farm\dist` 只包含发布必需文件：`index.html`、`residence-settings.html`、`user-storage.html`、`rules.html`、`crop-archive.html`、`value-calculator.html`、`ranch.html`、`planner.html`、`planner-detail.html`、`interest-circle.html`、`style.css`、`storage-keys.js`、`cloud-config.js`、`cloud-sync.js`、`app.js`、`interest-circle.js`、`favicon.svg`。
+- 检查 `E:\HOKW_Farm\dist` 只包含发布必需文件：`index.html`、`residence-settings.html`、`user-storage.html`、`rules.html`、`crop-archive.html`、`value-calculator.html`、`ranch.html`、`planner.html`、`planner-detail.html`、`experience-planner.html`、`interest-circle.html`、`style.css`、`storage-keys.js`、`cloud-config.js`、`cloud-sync.js`、`app.js`、`interest-circle.js`、`favicon.svg`。
 - 确认 `dist` 不包含 `AGENTS.md`、`README.md`、`TODO.md`、`supabase/`、`.xlsx` 和 `wzry_world_farm_helper_progress_audio (1).html`，且不包含 Supabase service role、secret key 或数据库密码。
 - 未设置 `HOKW_SUPABASE_URL` 和 `HOKW_SUPABASE_PUBLISHABLE_KEY` 时运行 `npm run build`，确认 `dist/cloud-config.js` 里 `syncEnabled` 为 `false`，各页面仍可本地模式打开。
 - 设置 Cloudflare Pages 环境变量后重新部署，确认 `dist/cloud-config.js` 里只出现项目 URL 和 publishable key，不出现 secret key。
 - 在 `user-storage.html` 点击“导出全部数据”，确认会下载 `hokw-farm-helper-backup-*.json`，文本框中出现 JSON，summary 包含当前已有的可迁移本地数据项，且不包含旧作物档案 key `wzry-world-farm-crop-archive-v1`。
-- 使用导出的 JSON 在新浏览器配置或清空后的本地存储中测试导入，确认导入前有覆盖确认，导入后页面刷新并恢复种植、动物档案、牧场、规划、收益对比和兴趣圈数据；旧作物档案即使存在于备份 JSON 中也不应恢复为可用作物库。
-- Supabase 真实项目验证：执行 `supabase/user_snapshots.sql` 后，用邮箱验证码登录；云端为空且本地有数据时应创建 `primary` 快照；另一个浏览器同邮箱登录应恢复云端数据；两个不同邮箱互相看不到对方快照；修改兴趣圈、牧场、规划或动物档案后，数秒内云端 `payload` 更新；作物档案不进入云端快照。
+- 使用导出的 JSON 在新浏览器配置或清空后的本地存储中测试导入，确认导入前有覆盖确认，导入后页面刷新并恢复种植、动物档案、牧场、规划、经验规划器、收益对比和兴趣圈数据；旧作物档案即使存在于备份 JSON 中也不应恢复为可用作物库。
+- Supabase 真实项目验证：执行 `supabase/user_snapshots.sql` 后，用邮箱验证码登录；云端为空且本地有数据时应创建 `primary` 快照；另一个浏览器同邮箱登录应恢复云端数据；两个不同邮箱互相看不到对方快照；修改兴趣圈、牧场、规划、经验规划器或动物档案后，数秒内云端 `payload` 更新；作物档案不进入云端快照。
 - 用浏览器打开 `E:\HOKW_Farm\index.html`。
 - 点击顶部 `🌱 Farm Helper` 旁的“居所设置”，确认能进入 `residence-settings.html`；修改居所等级、农田数量和菜摊等级后刷新仍保留，并且 `planner.html` 继续读取同一组设置；菜摊等级只影响作物档案里的参考收益展示。
 - 点击顶部 `🌱 Farm Helper` 旁的“用户与存档管理”，确认能进入 `user-storage.html`；点击“导出全部数据”，确认文本框出现 `HOKW_Farm` 备份 JSON。
@@ -186,6 +189,9 @@ npm run build
 - 从主页顶部点击“居所设置”，在 `residence-settings.html` 调整居所等级和农田数量，检查刷新或进入 `planner.html` 后仍读取同一组设置。
 - 在 `planner.html` 填写周末目标数量和睡眠时间，检查规划区能显示下一步建议、总体时间进度条、当前作物进度条、周末目标进度、预计达标时间和可用作物数量。
 - 点击 `planner.html` 的“完整一周规划”，确认能进入 `planner-detail.html`，并按箭头卡片显示完整 7 天排期。
+- 点击主页顶部“经验规划器”，确认能进入 `experience-planner.html` 并可返回主页面；输入 `200W` 或 `200万` 后点击“更新经验规划”，确认目标被解析为 `2,000,000` 经验。
+- 在 `experience-planner.html` 构造 30 块田、一键规划有理论作物排期、牧场 16h/20h 动物数量和动物每轮经验均已填写的场景，确认页面展示预计达成、7 天累计、作物贡献、牧场贡献、关键计算过程和近期经验账本；作物经验应按 `档案经验 × 农田数量`，16h 动物按 12 小时一次，20h 动物按 15 小时一次。
+- 在 `experience-planner.html` 把目标调到明显超过 7 天可获得经验的数值，确认预计达成显示 `>7天`。
 - 构造已有当前作物场景，检查规划中当前作物按理论最短成熟时间显示，并包含后续好友浇水、自浇和收尾自浇节点。
 - 检查周末目标进度为圆环展示，显示作物获取数量，且不再出现旧的横向 `planner-progress` 进度条。
 - 构造睡眠 `00:00-08:00`、晚上 19:00 开始的经验作物场景，检查规划不会机械选择睡眠中成熟的长周期作物；若短周期桥接总收益更高，应先安排短周期作物。
@@ -200,7 +206,7 @@ npm run build
 
 可选截图验证：
 
-- 如果可用，可以用 Edge/Chrome 无头截图检查 `index.html`、`residence-settings.html`、`user-storage.html`、`interest-circle.html`、`crop-archive.html`、`ranch.html`、`value-calculator.html` 和 `rules.html` 是否正常渲染。
+- 如果可用，可以用 Edge/Chrome 无头截图检查 `index.html`、`residence-settings.html`、`user-storage.html`、`experience-planner.html`、`interest-circle.html`、`crop-archive.html`、`ranch.html`、`value-calculator.html` 和 `rules.html` 是否正常渲染。
 - 截图文件属于临时验证产物，验证后应删除。
 
 ## 对话结束更新规则
@@ -231,6 +237,12 @@ npm run build
 - 其他 Codex 对话也可以直接更新本文件，但不要删除旧日志，除非用户明确要求整理。
 
 ## 交接日志
+
+### 2026-07-08 - 新增经验规划器
+
+- 改动：新增 `experience-planner.html` 二级页面和主页顶部“经验规划器”入口；`app.js` 新增 `wzry-world-farm-experience-planner-v1` 目标经验状态、`200W` / `200万` 目标解析、经验投影计算和页面渲染；经验投影复用一键规划 7 天理论作物排期，作物经验按 `档案经验 × 农田数量` 计入，牧场经验按当前动物档案和栏位数量滚动计算 16h 动物每 12 小时、20h 动物每 15 小时的批次经验；页面展示预计达成、7 天累计、作物/牧场拆分、关键计算过程和近期经验账本，超过 7 天显示 `>7天`；`storage-keys.js`、`scripts/build-site.js`、`scripts/verify-home-interactions.js`、`style.css`、`README.md` 和本交接文件已同步。
+- 验证：已先新增回归并运行 `npm run verify:home-interactions`，观察到旧逻辑按预期失败，错误为 `Experience planner should have its own secondary page`；完成修改后已运行 `node --check E:\HOKW_Farm\app.js`、`node --check E:\HOKW_Farm\interest-circle.js`、`node --check E:\HOKW_Farm\storage-keys.js`、`node --check E:\HOKW_Farm\cloud-sync.js`、`node --check E:\HOKW_Farm\scripts\build-site.js`、`node --check E:\HOKW_Farm\scripts\verify-cloud-sync-reload-guard.js`、`node --check E:\HOKW_Farm\scripts\verify-home-interactions.js`、`npm run verify:home-interactions`、`npm run verify:cloud-sync` 和 `npm run build`；构建显示 `Copied 17 files to dist` 且本地云同步配置为 disabled，已确认 `dist/` 包含 `experience-planner.html` 和发布必需文件、没有多余文件，`dist/cloud-config.js` 为空 Supabase 配置且 `syncEnabled: false`，未发现 service role、secret 或数据库密码关键词。
+- 后续注意：经验规划器只做 7 天估算，不改变一键规划排期算法、作物/动物档案数据、牧场批次计时或 Supabase 表结构；真实线上 Supabase 登录未在本机跑一遍，新 key 会跟随现有 JSON 快照机制同步。
 
 ### 2026-07-08 - 修复规划页云存档自动刷新循环
 

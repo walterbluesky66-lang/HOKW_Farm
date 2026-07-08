@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farm Helper · 经验规划器</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+</head>
+<body data-page="experience-planner">
+  <div class="app experience-planner-page">
+    <header class="hero">
+      <div>
+        <div class="pill">📈 经验规划器</div>
+        <h1>经验规划器</h1>
+        <p class="lead">设定一个经验目标，用一键规划里的理论作物排期和牧场最小收获间隔，估算 7 天内能否达成。</p>
+      </div>
+      <div class="actions">
+        <a class="btn ghost" href="index.html">← 返回打卡</a>
+        <a class="btn ghost" href="planner.html">🧭 一键规划</a>
+        <a class="btn ghost" href="ranch.html">🐮 牧场管理</a>
+        <a class="btn ghost" href="residence-settings.html">🏠 居所设置</a>
+      </div>
+    </header>
+
+    <main class="page-layout wide-page-layout">
+      <section class="panel experience-settings-panel">
+        <div class="panel-head">
+          <div class="panel-icon" style="background:#ecfdf5;color:#047857;">🎯</div>
+          <div><h2>经验目标</h2><p>支持直接填数字，也支持 200W / 200万 这种简写。</p></div>
+        </div>
+
+        <form id="experiencePlannerForm" class="planner-form">
+          <div class="form-grid planner-form-grid">
+            <div class="field">
+              <label for="experienceTarget">目标经验</label>
+              <input id="experienceTarget" class="input" type="text" inputmode="decimal" value="2000000" placeholder="例如 200W" />
+            </div>
+          </div>
+
+          <div class="two-actions planner-actions">
+            <button class="btn primary" type="submit">更新经验规划</button>
+            <a class="btn ghost" href="planner-detail.html">查看七天作物排期</a>
+          </div>
+        </form>
+
+        <div class="notice">关键计算过程会在下方展开：作物按“档案经验 × 农田块数”，牧场按“动物经验 × 数量 × 最小催产收获次数”。</div>
+      </section>
+
+      <section id="experiencePlannerArea"></section>
+    </main>
+  </div>
+
+  <div class="toast-zone" id="toastZone"></div>
+
+  <script src="storage-keys.js"></script>
+  <script src="cloud-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="cloud-sync.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

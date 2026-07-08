@@ -9,6 +9,10 @@ const buildSiteJs = fs.readFileSync(path.join(root, "scripts", "build-site.js"),
 const storageKeysJs = fs.readFileSync(path.join(root, "storage-keys.js"), "utf8");
 const cropArchiveHtml = fs.readFileSync(path.join(root, "crop-archive.html"), "utf8");
 const valueCalculatorHtml = fs.readFileSync(path.join(root, "value-calculator.html"), "utf8");
+const experiencePlannerHtmlPath = path.join(root, "experience-planner.html");
+const experiencePlannerHtml = fs.existsSync(experiencePlannerHtmlPath)
+  ? fs.readFileSync(experiencePlannerHtmlPath, "utf8")
+  : "";
 
 function assert(condition, message) {
   if (!condition) {
@@ -345,6 +349,33 @@ assert(
   "Build script should publish the new secondary pages"
 );
 
+assert(
+  experiencePlannerHtml,
+  "Experience planner should have its own secondary page"
+);
+assert(
+  indexHtml.includes('href="experience-planner.html"') &&
+    indexHtml.includes("经验规划器"),
+  "Home header should link to the experience planner secondary page"
+);
+assert(
+  experiencePlannerHtml.includes('id="experiencePlannerForm"') &&
+    experiencePlannerHtml.includes('id="experienceTarget"') &&
+    experiencePlannerHtml.includes('id="experiencePlannerArea"') &&
+    experiencePlannerHtml.includes("关键计算过程") &&
+    experiencePlannerHtml.includes('src="app.js"'),
+  "Experience planner page should expose a target form, results area, calculation explanation, and app.js"
+);
+assert(
+  buildSiteJs.includes('"experience-planner.html"'),
+  "Build script should publish the experience planner page"
+);
+assert(
+  storageKeysJs.includes("wzry-world-farm-experience-planner-v1") &&
+    storageKeysJs.includes("经验规划器"),
+  "Portable/cloud storage keys should include the experience planner target"
+);
+
 const cropArchiveBlock = between(
   appJs,
   "const BUILT_IN_CROP_ARCHIVE = [",
@@ -579,6 +610,113 @@ assert(
 assert(
   currentProgressHtml.includes("实际") && currentProgressHtml.includes("成熟") && currentProgressHtml.includes("空窗"),
   "Current crop progress should show actual maturity and the sleep gap before harvest"
+);
+
+const experienceNow = new Date(2026, 5, 26, 8, 0, 0, 0).getTime();
+const experiencePlannerContext = loadAppForPlannerChecks({
+  [plannerStateKey]: JSON.stringify({
+    active: true,
+    currentLevel: 52,
+    landCount: 30,
+    weekendTarget: 6000,
+    sleepStart: "00:00",
+    sleepEnd: "08:00",
+    includeBlessing: true,
+    startedAt: experienceNow,
+    progressWindowStart: experienceNow,
+    weekendProgress: 0
+  }),
+  "wzry-world-farm-animal-archive-v1": JSON.stringify([
+    {
+      id: "animal-exp-16",
+      name: "经验牛",
+      farmLevel: 52,
+      purchasePrice: 0,
+      durationHours: 16,
+      feedCost: 0,
+      productSaleBase: 0,
+      recyclePrice: 0,
+      exp: 1000,
+      createdAt: 1,
+      updatedAt: 1
+    },
+    {
+      id: "animal-exp-20",
+      name: "经验羊",
+      farmLevel: 52,
+      purchasePrice: 0,
+      durationHours: 20,
+      feedCost: 0,
+      productSaleBase: 0,
+      recyclePrice: 0,
+      exp: 800,
+      createdAt: 2,
+      updatedAt: 2
+    }
+  ]),
+  "wzry-world-farm-ranch-v1": JSON.stringify({
+    slotCount: 7,
+    stallLevel: 1,
+    groups: {
+      h16: { count: 4, startedAt: experienceNow - 11 * 60 * 60 * 1000, history: [] },
+      h20: { count: 3, startedAt: experienceNow - 14 * 60 * 60 * 1000, history: [] }
+    },
+    updatedAt: experienceNow
+  })
+}, {}, experienceNow);
+
+assert(
+  typeof experiencePlannerContext.parseExperienceTarget === "function" &&
+    experiencePlannerContext.parseExperienceTarget("200W") === 2000000 &&
+    experiencePlannerContext.parseExperienceTarget("200万") === 2000000,
+  "Experience planner should parse W/万 target shorthand"
+);
+assert(
+  typeof experiencePlannerContext.buildExperiencePlannerProjection === "function",
+  "Experience planner should expose a reusable projection builder"
+);
+
+const experienceProjection = experiencePlannerContext.buildExperiencePlannerProjection(400000, experienceNow);
+const h16RanchRecords = experienceProjection.ranchRecords.filter(record => record.groupKey === "h16");
+const h20RanchRecords = experienceProjection.ranchRecords.filter(record => record.groupKey === "h20");
+
+assert(
+  experienceProjection.reached &&
+    experienceProjection.targetMetAt <= experienceProjection.horizonEnd,
+  "Experience projection should find a target date when seven-day crop and ranch gains can reach the goal"
+);
+assert(
+  experienceProjection.cropRecords.length > 0 &&
+    experienceProjection.cropRecords.every(record => record.expGain === record.baseExp * experienceProjection.landCount),
+  "Experience projection crop gains should equal crop base experience times land count"
+);
+assert(
+  h16RanchRecords.length >= 2 &&
+    h16RanchRecords[1].at - h16RanchRecords[0].at === 12 * 60 * 60 * 1000 &&
+    h16RanchRecords[0].expGain === 4 * 1000,
+  "Experience projection should count 16h ranch animals every 12h with animal experience times count"
+);
+assert(
+  h20RanchRecords.length >= 2 &&
+    h20RanchRecords[1].at - h20RanchRecords[0].at === 15 * 60 * 60 * 1000 &&
+    h20RanchRecords[0].expGain === 3 * 800,
+  "Experience projection should count 20h ranch animals every 15h with animal experience times count"
+);
+assert(
+  experienceProjection.totalExp === experienceProjection.cropExp + experienceProjection.ranchExp,
+  "Experience projection total should equal crop plus ranch experience"
+);
+assert(
+  experienceProjection.steps.some(step => step.source === "crop") &&
+    experienceProjection.steps.some(step => step.source === "ranch"),
+  "Experience projection should keep a combined calculation ledger for the page explanation"
+);
+
+const hugeExperienceProjection = experiencePlannerContext.buildExperiencePlannerProjection(999999999, experienceNow);
+assert(
+  !hugeExperienceProjection.reached &&
+    hugeExperienceProjection.targetMetLabel === ">7天",
+  "Experience projection should show >7天 when the target exceeds the seven-day horizon"
 );
 
 console.log("Home interaction and standard crop archive checks passed.");

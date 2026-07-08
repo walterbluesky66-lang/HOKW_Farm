@@ -7,6 +7,7 @@
     const RANCH_KEY = "wzry-world-farm-ranch-v1";
     const ANIMAL_VALUE_CALCULATOR_KEY = "wzry-world-farm-animal-value-calculator-v1";
     const PLANNER_KEY = "wzry-world-farm-planner-v1";
+    const EXPERIENCE_PLANNER_KEY = "wzry-world-farm-experience-planner-v1";
     const INTEREST_CIRCLE_KEY = "wzry-world-interest-circle-v1";
     const PORTABLE_DATA_VERSION = window.HOKW_STORAGE?.portableDataVersion || 1;
     const MINUTE = 60 * 1000;
@@ -17,6 +18,7 @@
     const PLANNER_DEFAULT_WEEKEND_TARGET = 6000;
     const PLANNER_DEFAULT_SLEEP_START = "00:00";
     const PLANNER_DEFAULT_SLEEP_END = "08:00";
+    const EXPERIENCE_PLANNER_DEFAULT_TARGET = 2000000;
     const PLANNER_UNIT_NORMAL = 30;
     const PLANNER_UNIT_DOUBLE = 60;
     const PLANNER_BLESSING_MULTIPLIER = 3;
@@ -78,6 +80,7 @@
       { key: RANCH_KEY, label: "牧场管理" },
       { key: ANIMAL_VALUE_CALCULATOR_KEY, label: "动物对比" },
       { key: PLANNER_KEY, label: "一键规划" },
+      { key: EXPERIENCE_PLANNER_KEY, label: "经验规划器" },
       { key: INTEREST_CIRCLE_KEY, label: "兴趣圈" }
     ];
 
@@ -144,6 +147,7 @@
     let calculatorOptions = loadCalculatorOptions();
     let ranchState = loadRanchState();
     let plannerState = loadPlannerState();
+    let experiencePlannerState = loadExperiencePlannerState();
     let audioCtx = null;
     const customSelects = [];
     migrateLegacyCalculatorItems();
@@ -183,6 +187,9 @@
       plannerStartBtn: document.getElementById("plannerStartBtn"),
       plannerStopBtn: document.getElementById("plannerStopBtn"),
       plannerFormNote: document.getElementById("plannerFormNote"),
+      experiencePlannerForm: document.getElementById("experiencePlannerForm"),
+      experienceTarget: document.getElementById("experienceTarget"),
+      experiencePlannerArea: document.getElementById("experiencePlannerArea"),
       toastZone: document.getElementById("toastZone"),
       statStatus: document.getElementById("statStatus"),
       statStatusSub: document.getElementById("statStatusSub"),
@@ -269,6 +276,7 @@
       if (els.valueSunbin) els.valueSunbin.checked = calculatorOptions.sunbin === true;
       initializeRanchForm();
       initializePlannerForm();
+      initializeExperiencePlannerForm();
       updateValueSortOptions();
       enhanceCustomSelects();
       updateStartModeUI();
@@ -281,6 +289,7 @@
       renderValueCalculator();
       renderAnimalValueCalculator();
       renderPlanner();
+      renderExperiencePlanner();
       if (isMainPage || isRanchPage) {
         setInterval(tick, 1000);
         document.addEventListener("visibilitychange", tick);
@@ -703,6 +712,8 @@
         const refreshButton = event.target.closest("[data-planner-refresh]");
         if (refreshButton) renderPlanner();
       });
+      els.experiencePlannerForm?.addEventListener("submit", saveExperiencePlannerTargetFromForm);
+      els.experienceTarget?.addEventListener("change", saveExperiencePlannerTargetFromForm);
     }
 
     function updateStartModeUI() {
@@ -773,6 +784,10 @@
       if (els.plannerIncludeBlessing) els.plannerIncludeBlessing.checked = plannerState.includeBlessing !== false;
       if (els.plannerSleepStart) els.plannerSleepStart.value = plannerState.sleepStart;
       if (els.plannerSleepEnd) els.plannerSleepEnd.value = plannerState.sleepEnd;
+    }
+
+    function initializeExperiencePlannerForm() {
+      if (els.experienceTarget) els.experienceTarget.value = String(experiencePlannerState.targetExp);
     }
 
     function readPlannerFormValues() {
@@ -850,6 +865,25 @@
       savePlannerState();
       if (isMainPage) render();
       renderPlanner();
+    }
+
+    function saveExperiencePlannerTargetFromForm(event) {
+      event?.preventDefault();
+      const targetExp = parseExperienceTarget(els.experienceTarget?.value);
+      if (!targetExp) {
+        showToast("经验目标格式不对", "可以填写 2000000、200W 或 200万。", "warn");
+        renderExperiencePlanner();
+        return;
+      }
+
+      experiencePlannerState = {
+        targetExp,
+        updatedAt: Date.now()
+      };
+      saveExperiencePlannerState();
+      initializeExperiencePlannerForm();
+      renderExperiencePlanner();
+      showToast("经验目标已更新", `当前按 ${formatNumber(targetExp)} 经验估算。`, "good");
     }
 
     function stopPlanner() {
@@ -1433,6 +1467,43 @@
 
     function savePlannerState() {
       localStorage.setItem(PLANNER_KEY, JSON.stringify(plannerState));
+    }
+
+    function loadExperiencePlannerState() {
+      try {
+        const raw = localStorage.getItem(EXPERIENCE_PLANNER_KEY);
+        return normalizeExperiencePlannerState(raw ? JSON.parse(raw) : {});
+      } catch (err) {
+        return normalizeExperiencePlannerState({});
+      }
+    }
+
+    function saveExperiencePlannerState() {
+      localStorage.setItem(EXPERIENCE_PLANNER_KEY, JSON.stringify(experiencePlannerState));
+    }
+
+    function normalizeExperiencePlannerState(raw) {
+      const state = raw && typeof raw === "object" ? raw : {};
+      const targetExp = parseExperienceTarget(state.targetExp) || EXPERIENCE_PLANNER_DEFAULT_TARGET;
+      return {
+        targetExp,
+        updatedAt: Number.isFinite(Number(state.updatedAt)) ? Number(state.updatedAt) : Date.now()
+      };
+    }
+
+    function parseExperienceTarget(value) {
+      if (typeof value === "number") {
+        return Number.isFinite(value) && value > 0 ? Math.round(value) : null;
+      }
+
+      const raw = String(value || "").trim();
+      if (!raw) return null;
+      const compact = raw.replace(/[,\s]/g, "");
+      const wanMatch = compact.match(/^(\d+(?:\.\d+)?)(?:w|W|万|萬)$/u);
+      const plainMatch = compact.match(/^\d+(?:\.\d+)?$/u);
+      const numeric = wanMatch ? Number(wanMatch[1]) * 10000 : plainMatch ? Number(compact) : NaN;
+      if (!Number.isFinite(numeric) || numeric <= 0) return null;
+      return Math.round(numeric);
     }
 
     function normalizePlannerState(raw) {
@@ -3524,6 +3595,116 @@
       `;
     }
 
+    function renderExperiencePlanner() {
+      if (!els.experiencePlannerArea) return;
+      const inputTarget = parseExperienceTarget(els.experienceTarget?.value);
+      const targetExp = inputTarget || experiencePlannerState.targetExp;
+      const projection = buildExperiencePlannerProjection(targetExp);
+      const progressPct = projection.targetExp > 0
+        ? clamp((projection.totalExp / projection.targetExp) * 100, 0, 100)
+        : 0;
+      const nextSteps = projection.steps.slice(0, 12);
+      const reachedStep = projection.reached
+        ? projection.steps.find(step => step.reachesTarget)
+        : null;
+
+      els.experiencePlannerArea.innerHTML = `
+        <section class="panel experience-panel">
+          <div class="panel-head planner-head">
+            <div class="panel-icon" style="background:#ecfdf5;color:#047857;">📈</div>
+            <div>
+              <h2>经验规划器</h2>
+              <p>从现在到 ${formatPlannerDateTime(projection.horizonEnd)}，复用一键规划的理论作物排期，并把牧场按最小催产间隔滚动计入。</p>
+            </div>
+          </div>
+
+          <div class="planner-summary experience-summary">
+            <div class="value-rank">
+              <span>预计达成</span>
+              <strong>${escapeHtml(projection.targetMetLabel)}</strong>
+              <small>${projection.reached ? `约 ${escapeHtml(projection.durationLabel)} 后达成` : `7 天内还差 ${formatNumber(projection.remainingExp)} 经验`}</small>
+            </div>
+            <div class="value-rank">
+              <span>七天累计</span>
+              <strong>${formatNumber(projection.totalExp)}</strong>
+              <small>目标 ${formatNumber(projection.targetExp)} · ${progressPct.toFixed(1)}%</small>
+            </div>
+            <div class="value-rank">
+              <span>作物贡献</span>
+              <strong>${formatNumber(projection.cropExp)}</strong>
+              <small>${formatNumber(projection.cropRecords.length)} 次理论收获 · ${formatNumber(projection.landCount)} 块田</small>
+            </div>
+            <div class="value-rank">
+              <span>牧场贡献</span>
+              <strong>${formatNumber(projection.ranchExp)}</strong>
+              <small>${formatNumber(projection.ranchRecords.length)} 次批次收获 · ${formatNumber(projection.slotCount)} 个栏位</small>
+            </div>
+          </div>
+
+          <div class="progress-wrap experience-progress">
+            <div class="progress-top"><span>目标进度</span><span>${progressPct.toFixed(1)}%</span></div>
+            <div class="progress"><div class="progress-bar" style="width:${progressPct}%;"></div></div>
+            <div class="progress-note">${projection.reached && reachedStep ? `达成那一笔：${escapeHtml(reachedStep.sourceLabel)} ${escapeHtml(reachedStep.name)} +${formatNumber(reachedStep.expGain)} 经验。` : "超过当前 7 天排期时，预计达成目标日期显示为 >7天。"}</div>
+          </div>
+        </section>
+
+        <section class="panel experience-explain-panel">
+          <div class="panel-head">
+            <div class="panel-icon" style="background:#eff6ff;color:#0369a1;">🧮</div>
+            <div><h2>关键计算过程</h2><p>这里列出本次估算的核心口径，方便核对结果是否可信。</p></div>
+          </div>
+          <div class="experience-rule-grid">
+            <div class="notice">
+              <strong>作物经验</strong>
+              <span>按一键规划里的理论收获时间计入；每次收获 = 档案作物经验 × 农田块数。当前使用 ${formatNumber(projection.landCount)} 块田。</span>
+            </div>
+            <div class="notice">
+              <strong>牧场经验</strong>
+              <span>16h 动物按 12h 一次、20h 动物按 15h 一次；每次 = 动物每轮经验 × 当前养殖数量。</span>
+            </div>
+            <div class="notice">
+              <strong>七天边界</strong>
+              <span>只统计到 ${formatPlannerDateTime(projection.horizonEnd)}。若累计仍不足目标，达成时间统一显示为 &gt;7天。</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel experience-ledger-panel">
+          <div class="panel-head">
+            <div class="panel-icon" style="background:#fff7ed;color:#c2410c;">📋</div>
+            <div><h2>近期经验账本</h2><p>按时间合并作物和牧场的预计收获，累计到目标时停止判断。</p></div>
+          </div>
+          ${nextSteps.length ? `
+            <div class="experience-ledger">
+              ${nextSteps.map(renderExperienceStep).join("")}
+            </div>
+          ` : `
+            <div class="value-empty">
+              <strong>暂无可计入的经验来源</strong>
+              <span>请确认一键规划有可收获作物，或在牧场/动物档案里填写动物数量和每轮经验。</span>
+            </div>
+          `}
+        </section>
+      `;
+    }
+
+    function renderExperienceStep(step) {
+      const reachedClass = step.reachesTarget ? " is-target" : "";
+      return `
+        <article class="experience-step${reachedClass}">
+          <div>
+            <span class="badge ${step.source === "crop" ? "green" : "blue"}">${escapeHtml(step.sourceLabel)}</span>
+            <strong>${escapeHtml(step.name)}</strong>
+            <small>${formatPlannerDateTime(step.at)} · ${escapeHtml(step.formula)} · ${escapeHtml(step.note)}</small>
+          </div>
+          <div class="experience-step-gain">
+            <strong>+${formatNumber(step.expGain)}</strong>
+            <span>累计 ${formatNumber(step.cumulativeAfter)}</span>
+          </div>
+        </article>
+      `;
+    }
+
     function renderPlanner() {
       if (!els.plannerArea) return;
       const now = Date.now();
@@ -3766,6 +3947,132 @@
         ].filter(Boolean).join(" · ") || "暂无有效收益作物",
         formNote: `规划开启中。${settings.includeBlessing ? "已计入好友祈福成功估算；" : "未计入好友祈福，按基础双倍收获计算；"}模型会枚举“种植/等待关键窗口”，比较目标数量、双倍百工币、经验和睡眠空等；睡眠 ${settings.sleepStart}-${settings.sleepEnd}，双倍窗口按周五 08:00 到周一 00:00。`
       };
+    }
+
+    function getExperiencePlannerPreview(now = Date.now()) {
+      if (plannerState.active) return buildPlannerPreview(now);
+
+      const snapshot = plannerState;
+      const doubleWindow = getCurrentOrNextDoubleWindow(now);
+      plannerState = {
+        ...plannerState,
+        startedAt: now,
+        progressWindowStart: doubleWindow.start,
+        weekendProgress: 0
+      };
+
+      try {
+        return buildPlannerPreview(now);
+      } finally {
+        plannerState = snapshot;
+      }
+    }
+
+    function buildExperiencePlannerProjection(targetValue = experiencePlannerState.targetExp, now = Date.now()) {
+      const targetExp = parseExperienceTarget(targetValue) || EXPERIENCE_PLANNER_DEFAULT_TARGET;
+      const preview = getExperiencePlannerPreview(now);
+      const settings = getPlannerSettings();
+      const horizonEnd = plannerState.active
+        ? getPlannerHorizonEnd(plannerState.startedAt)
+        : now + PLANNER_HORIZON_MS;
+      const cropRecords = buildExperienceCropRecords(preview.records, settings.landCount, now, horizonEnd);
+      const ranchRecords = buildExperienceRanchRecords(now, horizonEnd);
+      const ordered = [...cropRecords, ...ranchRecords]
+        .filter(record => record.expGain > 0 && record.at >= now - MINUTE && record.at <= horizonEnd)
+        .sort((a, b) => a.at - b.at || (a.source === "crop" ? -1 : 1));
+
+      let cumulative = 0;
+      let targetMetAt = null;
+      const steps = ordered.map(record => {
+        cumulative += record.expGain;
+        const reachesTarget = targetMetAt === null && cumulative >= targetExp;
+        const step = {
+          ...record,
+          cumulativeAfter: cumulative,
+          reachesTarget
+        };
+        if (reachesTarget) targetMetAt = record.at;
+        return step;
+      });
+
+      const cropExp = cropRecords.reduce((total, record) => total + record.expGain, 0);
+      const ranchExp = ranchRecords.reduce((total, record) => total + record.expGain, 0);
+      const totalExp = cropExp + ranchExp;
+      const reached = targetMetAt !== null;
+
+      return {
+        targetExp,
+        startAt: now,
+        horizonEnd,
+        landCount: settings.landCount,
+        slotCount: ranchState.slotCount,
+        plannerActive: plannerState.active === true,
+        cropExp,
+        ranchExp,
+        totalExp,
+        remainingExp: Math.max(0, targetExp - totalExp),
+        reached,
+        targetMetAt,
+        targetMetLabel: reached ? formatPlannerDateTime(targetMetAt) : ">7天",
+        durationLabel: reached ? formatDuration(targetMetAt - now, true) : ">7天",
+        cropRecords,
+        ranchRecords,
+        steps,
+        bestLabels: preview.bestLabels,
+        availableCropCount: preview.availableCrops.length
+      };
+    }
+
+    function buildExperienceCropRecords(records, landCount, now, horizonEnd) {
+      return records
+        .filter(record => record && record.type !== "wait" && record.expGain > 0 && record.harvestAt >= now - MINUTE && record.harvestAt <= horizonEnd)
+        .map(record => {
+          const baseExp = landCount > 0 ? record.expGain / landCount : record.expGain;
+          return {
+            source: "crop",
+            sourceLabel: "作物",
+            at: record.harvestAt,
+            name: record.name,
+            baseExp,
+            landCount,
+            expGain: record.expGain,
+            formula: `${formatNumber(baseExp)} × ${formatNumber(landCount)} 块田`,
+            note: record.locked ? "当前作物先占用排期" : "来自一键规划理论收获"
+          };
+        });
+    }
+
+    function buildExperienceRanchRecords(now, horizonEnd) {
+      const records = [];
+      getRanchInfos(now).forEach(info => {
+        if (!info.active || !info.animal || info.group.count <= 0 || info.animal.exp <= 0) return;
+        const interval = info.harvestDuration;
+        if (!Number.isFinite(interval) || interval <= 0) return;
+
+        const firstAt = info.timed
+          ? Math.max(now, info.harvestAt)
+          : now + interval;
+        const timingNote = info.timed
+          ? (info.harvestAt <= now ? "当前已到点，按现在可收计入" : "使用牧场保存的剩余时间")
+          : "未保存剩余时间，按从现在开始一个完整催产周期估算";
+
+        for (let at = firstAt; at <= horizonEnd; at += interval) {
+          records.push({
+            source: "ranch",
+            sourceLabel: "牧场",
+            groupKey: info.meta.key,
+            at,
+            name: `${info.animal.name} · ${info.meta.shortLabel}`,
+            baseExp: info.animal.exp,
+            count: info.group.count,
+            intervalMs: interval,
+            expGain: info.animal.exp * info.group.count,
+            formula: `${formatNumber(info.animal.exp)} × ${formatNumber(info.group.count)} 只`,
+            note: `${timingNote}；最小收获间隔 ${formatDuration(interval, true)}`
+          });
+        }
+      });
+      return records;
     }
 
     function buildPlannerBlessingPlan(records, actualProgress, settings) {
