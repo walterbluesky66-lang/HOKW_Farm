@@ -232,6 +232,12 @@ npm run build
 
 ## 交接日志
 
+### 2026-07-08 - 修复一键规划过期窗口和 Lv.52 性能
+
+- 改动：`app.js` 在开启/更新和渲染规划时检测 7 天规划窗口是否过期，过期会保留当前等级、田数、目标、睡眠和祈福设置，先归一化目标进度窗口，再把规划起点刷新到当前时间，避免旧窗口结束后继续生成空排期并显示“暂无可执行作物”；一键规划滚动动态规划深度从 `16` 收紧为 `6`，让 Lv.52 等高等级双倍边界场景能在浏览器端及时完成；`scripts/verify-home-interactions.js` 增加可固定 `Date`、`localStorage` 和页面元素的规划测试，覆盖 Lv.52 候选仍包含 `浣溪圆茄`、过期窗口自动刷新，以及周五 08:00 双倍边界下的重型规划性能；`README.md`、`TODO.md` 和本交接文件已同步。
+- 验证：已先补充回归并运行 `npm run verify:home-interactions`，观察到旧逻辑因缺少过期窗口刷新 helper 按预期失败；另在收紧动态规划深度前观察到 Lv.52 重型规划约 `27` 秒并超出测试阈值；完成修改后已运行 `node --check E:\HOKW_Farm\app.js`、`node --check E:\HOKW_Farm\interest-circle.js`、`node --check E:\HOKW_Farm\storage-keys.js`、`node --check E:\HOKW_Farm\cloud-sync.js`、`node --check E:\HOKW_Farm\scripts\build-site.js`、`node --check E:\HOKW_Farm\scripts\verify-cloud-sync-reload-guard.js`、`node --check E:\HOKW_Farm\scripts\verify-home-interactions.js`、`npm run verify:home-interactions`、`npm run verify:cloud-sync` 和 `npm run build`；构建显示 `Copied 16 files to dist` 且本地云同步配置为 disabled，已确认 `dist/` 只包含发布必需文件、空 Supabase 配置和公开 Supabase CDN 引用，未包含交接文档、README、TODO、Excel、原始参考 HTML、service role、secret 或数据库密码。
+- 后续注意：本次不改变作物标准库、等级筛选、周末目标公式、浇水/睡眠推演、牧场或云同步数据结构；Lv.52 档案中的 `浣溪圆茄` 本来已纳入可用候选，用户遇到的空规划主要来自已开启规划的 7 天窗口过期。
+
 ### 2026-06-26 - 修复当前作物睡前自浇空窗
 
 - 改动：`app.js` 新增通用规划自浇候选选择逻辑；当下一次自浇会因睡眠时间顺延到醒后时，会同时评估睡眠开始前最后可操作的非满额自浇，并选择能让作物更早成熟的方案；该逻辑同时用于新作物排期和当前正在种的作物排期，避免当前作物进度继续显示“08:00（睡眠后）浇水 → 08:00 收获”而漏掉 8 点前实际成熟的空窗；`scripts/verify-home-interactions.js` 新增周五 `17:31` 当前作物回归场景，验证 `21:44` 自浇后会改用 `23:59` 睡前自浇并产生睡眠空窗；`README.md` 和本交接文件已同步。

@@ -65,7 +65,26 @@ function createFakeElement() {
   };
 }
 
-function loadAppForPlannerChecks() {
+function loadAppForPlannerChecks(localStorageSeed = {}, elementOverrides = {}, now = null) {
+  const DateCtor = now === null
+    ? Date
+    : class FixedDate extends Date {
+        constructor(...args) {
+          super(...(args.length ? args : [now]));
+        }
+
+        static now() {
+          return now;
+        }
+
+        static parse(value) {
+          return Date.parse(value);
+        }
+
+        static UTC(...args) {
+          return Date.UTC(...args);
+        }
+      };
   const documentMock = {
     addEventListener() {},
     body: {
@@ -76,8 +95,10 @@ function loadAppForPlannerChecks() {
     createElement() {
       return createFakeElement();
     },
-    getElementById() {
-      return createFakeElement();
+    getElementById(id) {
+      return Object.prototype.hasOwnProperty.call(elementOverrides, id)
+        ? elementOverrides[id]
+        : null;
     },
     querySelector() {
       return null;
@@ -86,12 +107,17 @@ function loadAppForPlannerChecks() {
       return [];
     }
   };
+  const localStorageStore = new Map(Object.entries(localStorageSeed));
   const localStorageMock = {
-    getItem() {
-      return null;
+    getItem(key) {
+      return localStorageStore.has(key) ? localStorageStore.get(key) : null;
     },
-    removeItem() {},
-    setItem() {}
+    removeItem(key) {
+      localStorageStore.delete(key);
+    },
+    setItem(key, value) {
+      localStorageStore.set(key, String(value));
+    }
   };
   const windowMock = {
     addEventListener() {},
@@ -113,7 +139,7 @@ function loadAppForPlannerChecks() {
     clearInterval() {},
     clearTimeout,
     console,
-    Date,
+    Date: DateCtor,
     document: documentMock,
     Intl,
     isFinite,
@@ -139,6 +165,7 @@ function loadAppForPlannerChecks() {
   windowMock.window = windowMock;
   vm.createContext(context);
   vm.runInContext(appJs, context);
+  context.__localStorageStore = localStorageStore;
   return context;
 }
 
@@ -385,8 +412,87 @@ assert(
   "Portable/cloud storage keys should not include the old user crop archive key"
 );
 
-const plannerContext = loadAppForPlannerChecks();
+const plannerStateKey = "wzry-world-farm-planner-v1";
+const stalePlannerNow = new Date(2026, 6, 7, 9, 0, 0, 0).getTime();
+const stalePlannerStartedAt = stalePlannerNow - 8 * 24 * 60 * 60 * 1000;
+const stalePlannerContext = loadAppForPlannerChecks({
+  [plannerStateKey]: JSON.stringify({
+    active: true,
+    currentLevel: 52,
+    landCount: 30,
+    weekendTarget: 6000,
+    sleepStart: "00:00",
+    sleepEnd: "08:00",
+    includeBlessing: true,
+    startedAt: stalePlannerStartedAt,
+    progressWindowStart: stalePlannerStartedAt,
+    weekendProgress: 0
+  })
+});
+assert(
+  typeof stalePlannerContext.refreshExpiredPlannerHorizon === "function",
+  "Planner should expose a horizon refresh helper for expired active schedules"
+);
+assert(
+  stalePlannerContext.refreshExpiredPlannerHorizon(stalePlannerNow),
+  "Expired active planner schedules should roll the 7-day horizon forward"
+);
+const refreshedPlannerState = JSON.parse(
+  stalePlannerContext.__localStorageStore.get(plannerStateKey)
+);
+assert(
+  refreshedPlannerState.startedAt === stalePlannerNow,
+  "Expired active planner should save a fresh horizon start instead of staying on an old 7-day window"
+);
+assert(
+  stalePlannerContext.getPlannerAvailableCrops(52).some(item => item.name === "浣溪圆茄"),
+  "Lv.52 planner candidates should include 浣溪圆茄 after the horizon refresh"
+);
+const heavyPlannerNow = new Date(2026, 5, 26, 8, 0, 0, 0).getTime();
+const heavyPlannerContext = loadAppForPlannerChecks({
+  [plannerStateKey]: JSON.stringify({
+    active: true,
+    currentLevel: 52,
+    landCount: 30,
+    weekendTarget: 6000,
+    sleepStart: "00:00",
+    sleepEnd: "08:00",
+    includeBlessing: true,
+    startedAt: heavyPlannerNow,
+    progressWindowStart: heavyPlannerNow,
+    weekendProgress: 0
+  })
+}, {}, heavyPlannerNow);
+const heavyPlannerStartedAt = Date.now();
+const heavyPlannerPreview = heavyPlannerContext.buildPlannerPreview(heavyPlannerNow);
+const heavyPlannerElapsedMs = Date.now() - heavyPlannerStartedAt;
+assert(
+  heavyPlannerPreview.records.some(record => !record.locked),
+  "Lv.52 planner preview should still produce an executable crop in the heavy Friday double-window scenario"
+);
+assert(
+  heavyPlannerPreview.records.find(record => !record.locked)?.name === "星夜龙眼",
+  "Lv.52 planner should keep the Friday double-window target recommendation on 星夜龙眼"
+);
+assert(
+  heavyPlannerElapsedMs < 8000,
+  `Lv.52 planner preview should finish quickly enough for the browser, took ${heavyPlannerElapsedMs}ms`
+);
 const plannerPlantAt = new Date(2026, 5, 26, 16, 45, 0, 0).getTime();
+const plannerContext = loadAppForPlannerChecks({
+  [plannerStateKey]: JSON.stringify({
+    active: true,
+    currentLevel: 52,
+    landCount: 30,
+    weekendTarget: 6000,
+    sleepStart: "00:00",
+    sleepEnd: "08:00",
+    includeBlessing: true,
+    startedAt: plannerPlantAt,
+    progressWindowStart: plannerPlantAt,
+    weekendProgress: 0
+  })
+}, {}, plannerPlantAt);
 const plannerCycle = plannerContext.getPlannerCropCycle(
   { cropKey: "money20", coins: 1, exp: 0, name: "planner test crop" },
   plannerPlantAt,

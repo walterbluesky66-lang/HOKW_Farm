@@ -22,7 +22,7 @@
     const PLANNER_BLESSING_MULTIPLIER = 3;
     const PLANNER_BLESSING_MIN_PER_DAY = 2;
     const PLANNER_BLESSING_MAX_PER_DAY = 5;
-    const PLANNER_DP_DEPTH = 16;
+    const PLANNER_DP_DEPTH = 6;
     const PLANNER_DP_MAX_CANDIDATES = 14;
     const PLANNER_MAX_BLOCKS = 40;
     const VALUE_CROP_KEYS = ["fast5", "exp16", "money20", "exp28"];
@@ -822,13 +822,14 @@
 
       const now = Date.now();
       const wasActive = plannerState.active === true;
+      const restartHorizon = !wasActive || isPlannerHorizonExpired(now);
       plannerState = {
         ...plannerState,
         ...values,
         active: true,
-        startedAt: wasActive ? plannerState.startedAt : now,
-        progressWindowStart: wasActive ? plannerState.progressWindowStart : getCurrentOrNextDoubleWindow(now).start,
-        weekendProgress: wasActive ? plannerState.weekendProgress : 0,
+        startedAt: restartHorizon ? now : plannerState.startedAt,
+        progressWindowStart: restartHorizon ? getCurrentOrNextDoubleWindow(now).start : plannerState.progressWindowStart,
+        weekendProgress: restartHorizon ? 0 : plannerState.weekendProgress,
         updatedAt: now
       };
       normalizePlannerProgress(now);
@@ -1493,6 +1494,29 @@
         plannerState.updatedAt = now;
         savePlannerState();
       }
+    }
+
+    function getPlannerHorizonEnd(startedAt = plannerState.startedAt) {
+      const start = Number(startedAt);
+      return Number.isFinite(start) ? start + PLANNER_HORIZON_MS : 0;
+    }
+
+    function isPlannerHorizonExpired(now = Date.now()) {
+      return plannerState.active === true && now >= getPlannerHorizonEnd();
+    }
+
+    function refreshExpiredPlannerHorizon(now = Date.now()) {
+      if (!plannerState.active) return false;
+      normalizePlannerProgress(now);
+      if (!isPlannerHorizonExpired(now)) return false;
+
+      plannerState = {
+        ...plannerState,
+        startedAt: now,
+        updatedAt: now
+      };
+      savePlannerState();
+      return true;
     }
 
     function loadNotifyState() {
@@ -3502,7 +3526,9 @@
 
     function renderPlanner() {
       if (!els.plannerArea) return;
-      normalizePlannerProgress();
+      const now = Date.now();
+      normalizePlannerProgress(now);
+      refreshExpiredPlannerHorizon(now);
 
       if (!plannerState.active) {
         els.plannerArea.innerHTML = `
@@ -3521,7 +3547,7 @@
         return;
       }
 
-      const preview = buildPlannerPreview();
+      const preview = buildPlannerPreview(now);
       updatePlannerFormNote(preview.formNote);
 
       if (!preview.availableCrops.length) {
@@ -3675,6 +3701,7 @@
     }
 
     function buildPlannerPreview(now = Date.now()) {
+      refreshExpiredPlannerHorizon(now);
       const settings = getPlannerSettings();
       const availableCrops = getPlannerAvailableCrops(settings.currentLevel);
       const horizonEnd = plannerState.startedAt + PLANNER_HORIZON_MS;
